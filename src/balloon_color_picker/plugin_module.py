@@ -70,7 +70,7 @@ class ColorPlugin(Plugin):
         # Give QObjects reasonable names
         self._widget.setObjectName('ColorPluginUi')
 
-        print(rospy.get_param('gui_name')) 
+        # print(rospy.get_param('gui_name')) 
         # ROS services 
         self.balloon_sub = rospy.Subscriber('/circled', RosImg, self.img_callback, queue_size = 1)
         self.filter_sub  = rospy.Subscriber('/circle_filter', RosImg, self.filter_callback, queue_size = 1)
@@ -97,7 +97,7 @@ class ColorPlugin(Plugin):
 
 
         # DEFAULT IMAGE
-        img = cv2.imread('/home/mrs/balloon_workspace/src/ros_packages/balloon_color_picker/data/blue.png')
+        # img = cv2.imread('/home/mrs/balloon_workspace/src/ros_packages/balloon_color_picker/data/blue.png')
        
         cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
