@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QPushButton" name="clear">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>750</y>
+     <width>115</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Clear colors </string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="capture">
+    <property name="geometry">
+      <rect>
+        <x>150</x>
+        <y>750</y>
+        <width>98</width>
+        <height>27</height>
+      </rect>
+    </property>
+    <property name="text">
+      <string>Capture Color</string>
+    </property>
+  </widget>
+  <widget class="QPushButton" name="change">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>750</y>
+     <width>98</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>HSV</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="change_luv">
+   <property name="geometry">
+    <rect>
+     <x>370</x>
+     <y>750</y>
+     <width>98</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Lab</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="change_both">
+   <property name="geometry">
+    <rect>
+     <x>480</x>
+     <y>750</y>
+     <width>98</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Compare</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="wdg_img">
+   <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>1280</width>
+      <height>720</height>
+     </rect>
+  </property>
+  </widget>
+
+  <widget class="QLabel" name="label_lab">
+    <property name="geometry">
+      <rect>
+        <x>960</x>
+        <y>50</y>
+        <width>100</width>
+        <height>50</height>
+      </rect>
+    </property>
+
+    <property name="text">
+      <string>LAB</string>
+    </property>
+    <property name="Alignment">
+      <enum>Qt::AlignCenter</enum>
+    </property>
+  </widget>
+
+  <widget class="QLabel" name="label_hsv">
+    <property name="geometry">
+      <rect>
+        <x>320</x>
+        <y>50</y>
+        <width>100</width>
+        <height>50</height>
+      </rect>
+    </property>
+
+    <property name="text">
+      <string>HSV</string>
+    </property>
+    <property name="Alignment">
+      <enum>Qt::AlignCenter</enum>
+    </property>
+  </widget>
+
+  <widget class="QWidget" name="inner">
+    <property name="geometry">
+      <rect>
+        <x>1290</x>
+        <y>10</y>
+        <width>1280</width>
+        <height>720</height>
+      </rect>
+    </property>
+    <hbox>
+      <property name="name">
+        <cstring>box</cstring>
+      </property>
+      <!-- <property name="margin"> -->
+      <!--   <number>11</number> -->
+      <!-- </property> -->
+      <!-- <property name="spacing"> -->
+      <!--   <number>6</number> -->
+      <!-- </property> -->
+      <widget class="QVBoxLayout" name="box_layout">
+        <property name="geometry">
+          <rect>
+            <x>1310</x>
+            <y>350</y>
+            <width>500</width>
+            <height>500</height>
+          </rect>
+        </property>
+
+      </widget>
+    </hbox>
+  </widget>
+  <widget class="QWidget" name="inner_luv">
+    <property name="geometry">
+      <rect>
+        <x>1290</x>
+        <y>500</y>
+        <width>1280</width>
+        <height>720</height>
+      </rect>
+    </property>
+    <hbox>
+      <property name="name">
+        <cstring>box</cstring>
+      </property>
+      <!-- <property name="margin"> -->
+      <!--   <number>11</number> -->
+      <!-- </property> -->
+      <!-- <property name="spacing"> -->
+      <!--   <number>6</number> -->
+      <!-- </property> -->
+      <widget class="QVBoxLayout" name="box_layout">
+        <property name="geometry">
+          <rect>
+            <x>1310</x>
+            <y>350</y>
+            <width>500</width>
+            <height>400</height>
+          </rect>
+        </property>
+
+      </widget>
+    </hbox>
+  </widget>
+
+  <widget class="QSlider" name="sigma_slider">
+    <property name="geometry">
+      <rect>
+        <x>30</x>
+        <y>850</y>
+        <width>400</width>
+        <height>20</height>
+      </rect>
+    </property>
+    <property name="minimum">
+      <number>0</number>
+    </property>
+    <property name="maximum">
+      <number>10</number>
+    </property>
+
+    <property name="TickPosition">
+      <enum>QSlider::TicksBelow</enum>
+    </property>
+    <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+    </property>
+  </widget>
+
+
+  <widget class="QLabel" name="sigma_value">
+        <property name="geometry">
+          <rect>
+            <x>30</x>
+            <y>800</y>
+            <width>400</width>
+            <height>30</height>
+          </rect>
+        </property>
+
+        <property name="text">
+          <string>Sigma H Value: 3 </string>
+        </property>
+
+        <property name="Alignment">
+          <enum>Qt::AlignCenter</enum>
+        </property>
+      </widget>
+
+ 
+  <widget class="QSlider" name="sigma_slider_s">
+    <property name="geometry">
+      <rect>
+        <x>30</x>
+        <y>900</y>
+        <width>400</width>
+        <height>20</height>
+      </rect>
+    </property>
+    <property name="minimum">
+      <number>0</number>
+    </property>
+    <property name="maximum">
+      <number>10</number>
+    </property>
+
+    <property name="TickPosition">
+      <enum>QSlider::TicksBelow</enum>
+    </property>
+    <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+    </property>
+  </widget>
+  <widget class="QLabel" name="sigma_value_s">
+        <property name="geometry">
+          <rect>
+            <x>30</x>
+            <y>870</y>
+            <width>400</width>
+            <height>30</height>
+          </rect>
+        </property>
+
+        <property name="text">
+          <string>Sigma S Value: 3 </string>
+        </property>
+
+        <property name="Alignment">
+          <enum>Qt::AlignCenter</enum>
+        </property>
+      </widget>
+
+  <widget class="QSlider" name="sigma_slider_v">
+    <property name="geometry">
+      <rect>
+        <x>30</x>
+        <y>950</y>
+        <width>400</width>
+        <height>20</height>
+      </rect>
+    </property>
+    <property name="minimum">
+      <number>0</number>
+    </property>
+    <property name="maximum">
+      <number>10</number>
+    </property>
+
+    <property name="TickPosition">
+      <enum>QSlider::TicksBelow</enum>
+    </property>
+    <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+    </property>
+  </widget>
+  <widget class="QLabel" name="sigma_value_v">
+        <property name="geometry">
+          <rect>
+            <x>30</x>
+            <y>915</y>
+            <width>400</width>
+            <height>30</height>
+          </rect>
+        </property>
+
+        <property name="text">
+          <string>Sigma V Value: 3 </string>
+        </property>
+
+        <property name="Alignment">
+          <enum>Qt::AlignCenter</enum>
+        </property>
+      </widget>
+  <widget class="QSlider" name="sigma_slider_lab">
+    <property name="geometry">
+      <rect>
+        <x>450</x>
+        <y>850</y>
+        <width>400</width>
+        <height>20</height>
+      </rect>
+    </property>
+    <property name="minimum">
+      <number>0</number>
+    </property>
+    <property name="maximum">
+      <number>10</number>
+    </property>
+
+    <property name="TickPosition">
+      <enum>QSlider::TicksBelow</enum>
+    </property>
+    <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+    </property>
+  </widget>
+  <widget class="QLabel" name="sigma_value_lab">
+        <property name="geometry">
+          <rect>
+            <x>450</x>
+            <y>800</y>
+            <width>400</width>
+            <height>30</height>
+          </rect>
+        </property>
+
+        <property name="text">
+          <string>Sigma L Value: 3 </string>
+        </property>
+
+        <property name="Alignment">
+          <enum>Qt::AlignCenter</enum>
+        </property>
+      </widget>
+  <widget class="QSlider" name="sigma_slider_a">
+    <property name="geometry">
+      <rect>
+        <x>450</x>
+        <y>900</y>
+        <width>400</width>
+        <height>20</height>
+      </rect>
+    </property>
+    <property name="minimum">
+      <number>0</number>
+    </property>
+    <property name="maximum">
+      <number>10</number>
+    </property>
+
+    <property name="TickPosition">
+      <enum>QSlider::TicksBelow</enum>
+    </property>
+    <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+    </property>
+  </widget>
+  <widget class="QLabel" name="sigma_value_a">
+        <property name="geometry">
+          <rect>
+            <x>450</x>
+            <y>870</y>
+            <width>400</width>
+            <height>30</height>
+          </rect>
+        </property>
+
+        <property name="text">
+          <string>Sigma A Value: 3 </string>
+        </property>
+
+        <property name="Alignment">
+          <enum>Qt::AlignCenter</enum>
+        </property>
+      </widget>
+
+  <widget class="QSlider" name="sigma_slider_b">
+    <property name="geometry">
+      <rect>
+        <x>450</x>
+        <y>950</y>
+        <width>400</width>
+        <height>20</height>
+      </rect>
+    </property>
+    <property name="minimum">
+      <number>0</number>
+    </property>
+    <property name="maximum">
+      <number>10</number>
+    </property>
+
+    <property name="TickPosition">
+      <enum>QSlider::TicksBelow</enum>
+    </property>
+    <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+    </property>
+  </widget>
+  <widget class="QLabel" name="sigma_value_b">
+        <property name="geometry">
+          <rect>
+            <x>450</x>
+            <y>915</y>
+            <width>400</width>
+            <height>30</height>
+          </rect>
+        </property>
+
+        <property name="text">
+          <string>Sigma B Value: 3 </string>
+        </property>
+
+        <property name="Alignment">
+          <enum>Qt::AlignCenter</enum>
+        </property>
+      </widget>
+
+
+  <widget class="QLabel" name="image_count">
+        <property name="geometry">
+          <rect>
+            <x>600</x>
+            <y>749</y>
+            <width>200</width>
+            <height>30</height>
+          </rect>
+        </property>
+
+        <property name="text">
+          <string>Samples taken: 0 </string>
+        </property>
+
+        <property name="Alignment">
+          <enum>Qt::AlignCenter</enum>
+        </property>
+      </widget>
+
+  <widget class="QPushButton" name="save_config">
+   <property name="geometry">
+    <rect>
+     <x>1120</x>
+     <y>750</y>
+     <width>115</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </widget>
+
+  <widget class="QLineEdit" name="directory">
+   <property name="geometry">
+    <rect>
+     <x>800</x>
+     <y>750</y>
+     <width>300</width>
+     <height>27</height>
+    </rect>
+   </property>
+
+   <property name="placeholderText">
+    <string>Save directory</string>
+   </property>
+
+  </widget>
+
+  <widget class="QGroupBox" name="color_buttons">
+   <property name="geometry">
+    <rect>
+     <x>900</x>
+     <y>785</y>
+     <width>300</width>
+     <height>300</height>
+    </rect>
+   </property>
+
+   <property name="title">
+     <string>Colors</string>
+   </property>
+
+  </widget>
+
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

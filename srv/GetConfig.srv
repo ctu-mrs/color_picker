@@ -1,0 +1,8 @@
+bool color
+---
+float64[] h
+float64[] s
+float64[] v
+float64[] l
+float64[] a
+float64[] b

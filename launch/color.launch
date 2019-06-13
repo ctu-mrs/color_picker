@@ -1,0 +1,29 @@
+<launch>
+
+  <!-- defines name of the namespace of the drone -->
+  <arg name="uav_name" default="uav" />
+
+  <!-- creates the namespace -->
+  <group ns="$(arg uav_name)">
+
+    <!-- neccessary for using images from rosbag -->
+
+    <!-- allows disabling the gui from command line -->
+    <arg name="gui" default="true" />
+
+    <!-- launch the node -->
+    <node name="balloon_color_picker" pkg="balloon_color_picker" type="color.py" output="screen">
+
+      <!-- load config from config file -->
+
+      <!-- Subscribed topics -->
+      <remap from="image_topic" to="/uav/rs_d435/color/image_raw" />
+      <remap from="circle_topic" to="/circled" />
+
+      <!-- Published topics -->
+
+    </node>
+
+  </group>
+
+</launch>

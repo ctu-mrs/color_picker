@@ -1,0 +1,20 @@
+<library path="src">
+  <class name="Color Picker Plugin" type="balloon_color_picker.plugin_module.ColorPlugin" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      GUI for picking color from camera
+    </description>
+    <qtgui>
+      <!-- optional grouping...
+      <group>
+        <label>Group</label>
+      </group>
+      <group>
+        <label>Subgroup</label>
+      </group>
+      -->
+      <label>Color Picker 9000</label>
+      <icon type="theme">system-help</icon>
+      <statustip>Great user interface to provide real value.</statustip>
+    </qtgui>
+  </class>
+</library>
