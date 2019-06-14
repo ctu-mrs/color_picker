@@ -509,6 +509,23 @@
 
   </widget>
 
+  <widget class="QGroupBox" name="radio_buttons">
+   <property name="geometry">
+    <rect>
+     <x>1210</x>
+     <y>785</y>
+     <width>70</width>
+     <height>100</height>
+    </rect>
+   </property>
+
+   <property name="title">
+     <string>ColorSpace</string>
+   </property>
+
+  </widget>
+
+
  </widget>
  <resources/>
  <connections/>

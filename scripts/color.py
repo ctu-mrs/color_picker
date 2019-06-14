@@ -36,25 +36,29 @@ from balloon_color_picker.srv import (
     GetConfig,
     GetConfigResponse,
     Pic,
-    PicResponse
+    PicResponse,
+    Params,
+    ParamsResponse
 )
 
 HSV = 0
-LUV = 1
+LAB = 1
 
 class ColorCapture():
     def __init__(self):
         rospy.init_node('color_picker_gui')
 
         self.circle_pub = rospy.Publisher('circle_topic', RosImg, queue_size=1)
-        self.circle_filter = rospy.Publisher('circle_filter', RosImg, queue_size=1)
-        self.circle_luv = rospy.Publisher('circle_luv', RosImg, queue_size=1)
-        self.circle_max = rospy.Publisher('circle_max', RosImg, queue_size=1)
+        self.circle_hsv = rospy.Publisher('circle_hsv', RosImg, queue_size=1)
+        self.circle_lab = rospy.Publisher('circle_lab', RosImg, queue_size=1)
         self.balloon_sub = rospy.Subscriber('image_topic', RosImg, self.balloon_call, queue_size = 1)
         self.balloon_filt  = rospy.Subscriber('image_topic', RosImg, self.balloon_filter, queue_size = 1)
-        self.balloon_luv  = rospy.Subscriber('image_topic', RosImg, self.balloon_filter_luv, queue_size = 1)
-        # self.balloon_mx  = rospy.Subscriber('image_topic', RosImg, balloon_max, queue_size = 1, callback_args=[self.circle_max])  
+        self.balloon_lab  = rospy.Subscriber('image_topic', RosImg, self.balloon_filter_lab, queue_size = 1)
         self.bridge = CvBridge()
+        self.save_dir = rospy.get_param('~save_dir')
+        self.config_path= rospy.get_param('~config_path')
+
+
         self.cur_img = np.zeros([720,1280])
 
         self.services_ready = False
@@ -78,7 +82,7 @@ class ColorCapture():
         self.s_arr = []
         self.v_arr = []
 
-        ## luv
+        ## lab
         self.l_mean = 0
         self.l_sigma = 0
         self.a_mean = 0
@@ -106,6 +110,7 @@ class ColorCapture():
             self.get_service  = rospy.Service('get_count', GetCount, self.get_count)
             self.config_service  = rospy.Service('get_config', GetConfig, self.get_config)
             self.pic_service  = rospy.Service('get_pic', Pic, self.save_pic)
+            self.params_service  = rospy.Service('get_params', Params, self.get_params)
             self.prepare_mask(img)
             rospy.loginfo('Services started')
             self.services_ready = True
@@ -115,7 +120,8 @@ class ColorCapture():
         cv  = (y//2, x//2)
         r = x//3
         cv2.circle(img, cv,r, 20 ,thickness=7, lineType=8, shift=0)
-        imgmsg = self.bridge.cv2_to_imgmsg(img, 'rgb8')
+        # imgmsg = self.bridge.cv2_to_imgmsg(img, 'rgb8')
+        imgmsg = self.bridge.cv2_to_imgmsg(img)
         img_circle = img.copy()
         self.circle_pub.publish(imgmsg)
 
@@ -168,10 +174,11 @@ class ColorCapture():
         self.upper_hsv = upper
         # Bitwise-AND mask and original imagettttt
         res = cv2.bitwise_and(img,img, mask= mask)
-        msg = self.bridge.cv2_to_imgmsg(res,'rgb8')
-        self.circle_filter.publish(msg)
+        # msg = self.bridge.cv2_to_imgmsg(res,'rgb8')
+        msg = self.bridge.cv2_to_imgmsg(res)
+        self.circle_hsv.publish(msg)
     
-    def balloon_filter_luv(self,data):
+    def balloon_filter_lab(self,data):
         img = self.bridge.imgmsg_to_cv2(data)
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
 
@@ -184,8 +191,9 @@ class ColorCapture():
 
         # Bitwise-AND mask and original imagettttt
         res = cv2.bitwise_and(img,img, mask= mask)
-        msg = self.bridge.cv2_to_imgmsg(res,'rgb8')
-        self.circle_luv.publish(msg)
+        # msg = self.bridge.cv2_to_imgmsg(res,'rgb8')
+        msg = self.bridge.cv2_to_imgmsg(res)
+        self.circle_lab.publish(msg)
 
 
 
@@ -198,8 +206,8 @@ class ColorCapture():
         h,s,v = self.get_masked_colors(img, HSV)
         rospy.loginfo('time for hsv {}'.format(time.time() - t))
         t = time.time()
-        l,u,lv = self.get_masked_colors(img, LUV)
-        rospy.loginfo('time for luv {}'.format(time.time() - t))
+        l,u,lv = self.get_masked_colors(img, LAB)
+        rospy.loginfo('time for lab {}'.format(time.time() - t))
 
         t = time.time()
         res = self.np_hist(h,s,v, l, u, lv)
@@ -282,7 +290,7 @@ class ColorCapture():
         self.s_arr = []
         self.v_arr = []
 
-        ## luv
+        ## lab
         self.l_mean = 0
         self.l_sigma = 0
         self.a_mean = 0
@@ -320,9 +328,8 @@ class ColorCapture():
     def get_masked_colors(self,img, color_space):
 
         if color_space == HSV:
-            self.flip_axes = False
             color = cv2.COLOR_BGR2HSV
-        elif color_space == LUV:
+        elif color_space == LAB:
             color = cv2.COLOR_BGR2Lab
 
         hsv = cv2.cvtColor(img, color)
@@ -333,90 +340,6 @@ class ColorCapture():
         c = masked[:, 2]
         return a,b,c
 
-    def get_colors(self, img, color_space):
-
-        if color_space == HSV:
-            self.flip_axes = False
-            color = cv2.COLOR_BGR2HSV
-        elif color_space == LUV:
-            color = cv2.COLOR_BGR2Lab
-        hsv = cv2.cvtColor(img, color)
-
-        x, y, c =img.shape
-        print(img.shape)
-        cv  = (y//2, x//2)
-        print(cv)
-        r = x//3
-        x,y = cv
-        rows = img.shape[0]
-        cols = img.shape[1]
-        count = 0
-        min_h = float('inf') 
-        min_s = float('inf')
-        min_v = float('inf')
-        max_h = 0
-        max_s = 0
-        max_v = 0
-        h_v = 0
-        s_v = 0
-        v_v = 0
-        h_arr = []
-        s_arr = []
-        v_arr = []
-
-        left_count = 0
-        right_count = 0
-        for i in range(cols):
-            for j in range(rows):
-                if hypot(i-x, j-y) < r-6.5:
-
-                    h,s,v = hsv[j,i]
-                    if h > max_h:
-                        max_h = h
-                    elif h < min_h:
-                        min_h = h
-                    if s > max_s:
-                        max_s = s
-                    elif s < min_s:
-                        min_s = s
-                    if v > max_v:
-                        max_v = v
-                    elif v < min_v:
-                        min_v = v
-
-                    if color_space is HSV:
-                        if  h > 160:
-                            left_count +=1
-                        if h < 30:
-                            right_count+=1
-
-                    h_v += h
-                    s_v += s
-                    v_v += v
-                    h_arr.append(h)
-                    s_arr.append(s)
-                    v_arr.append(v)
-                    count +=1
-
-        
-        if color_space is 34:
-
-            per_l = left_count / count
-            per_r = right_count / count
-            if per_l > 0.6 or per_r > 0.008:
-                self.flip_axes = True
-
-            rospy.loginfo('count {}'.format(count))
-
-            rospy.loginfo('left {} right {}'.format(left_count,right_count))
-            rospy.loginfo('left {} right {}'.format(per_l,per_r))
-            h = np.array(h_arr)
-            new_h = np.zeros(count)
-            new_h[h>90] = h[h>90] -90
-            new_h[h<90] = h[h<90] +90
-            return new_h, s_arr, v_arr
-        return h_arr, s_arr, v_arr
-
     def prepare_mask(self, img):
         x, y, c =img.shape
         cv  = (y//2, x//2)
@@ -426,13 +349,8 @@ class ColorCapture():
         rows = img.shape[0]
         cols = img.shape[1]
         zero = np.zeros((img.shape[0], img.shape[1]))
-        # for i in range(cols):
-        #     for j in range(rows):
-        #         if hypot(i-x, j-y) < r-6.5:
-                    # zero[j,i] = 1
         
         cv2.circle(zero, (x, y), r, 1, -1)
-        rospy.loginfo('mask {}'.format(zero))
         self.mask = zero
     def get_config(self, req):
         
@@ -446,8 +364,12 @@ class ColorCapture():
 
     def save_pic(self,req):
         rospy.loginfo('cur_img {}'.format(self.cur_img))
-        rospy.loginfo('ing {}'.format(cv2.imwrite('/home/mrs/ur_img.png',self.cur_img)))  
+        rospy.loginfo('ing {}'.format(cv2.imwrite('/home/mrs/last_img.png',self.cur_img)))  
         return PicResponse() 
+
+    def get_params(self, req):
+        
+        return ParamsResponse(self.config_path, self.save_dir, self.circle_pub.name, self.circle_hsv.name, self.circle_lab.name)
 
 if __name__ == '__main__':
     c = ColorCapture()

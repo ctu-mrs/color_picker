@@ -26,13 +26,15 @@ from balloon_color_picker.srv import (
     ChangeSigmaLab,
     ChangeSigmaLabResponse,
     GetConfig,
-    GetConfigResponse
+    GetConfigResponse,
+    Params,
+    ParamsResponse
 
 )
 from PIL import Image
 from qt_gui.plugin import Plugin
-from python_qt_binding import loadUi
-from python_qt_binding.QtWidgets import QWidget, QVBoxLayout, QPushButton
+from python_qt_binding import loadUi, QtCore
+from python_qt_binding.QtWidgets import QWidget, QVBoxLayout, QPushButton, QGroupBox, QRadioButton,QHBoxLayout
 from python_qt_binding.QtGui import QPixmap, QImage
 from argparse import ArgumentParser
 from cv_bridge import CvBridge
@@ -50,6 +52,8 @@ class ColorPlugin(Plugin):
         super(ColorPlugin, self).__init__(context)
         # Give QObjects reasonable names
         self.setObjectName('ColorPlugin')
+        rospy.sleep(1)
+        print(context)
         self.brd = CvBridge()
         # Process standalone plugin command-line arguments
         parser = ArgumentParser()
@@ -72,22 +76,35 @@ class ColorPlugin(Plugin):
 
         # print(rospy.get_param('gui_name')) 
         # ROS services 
-        self.balloon_sub = rospy.Subscriber('/circled', RosImg, self.img_callback, queue_size = 1)
-        self.filter_sub  = rospy.Subscriber('/circle_filter', RosImg, self.filter_callback, queue_size = 1)
-        self.filter_luv  = rospy.Subscriber('/circle_luv', RosImg, self.luv_callback, queue_size = 1)
-        self.hsv = message_filters.Subscriber('/circle_filter', RosImg)
-        self.luv = message_filters.Subscriber('/circle_luv', RosImg)
-
-        self.ts = message_filters.ApproximateTimeSynchronizer([self.luv,  self.hsv], 1, 0.5)
-        self.ts.registerCallback(self.both_callback)
-
+ 
         self.sigma_caller = rospy.ServiceProxy('change_sigma', ChangeSigma)
         self.sigma_lab_caller = rospy.ServiceProxy('change_sigma_lab', ChangeSigmaLab)
-
         self.caller = rospy.ServiceProxy('capture', Capture)
         self.get_count = rospy.ServiceProxy('get_count', GetCount)
         self.clear_count = rospy.ServiceProxy('clear_count', ClearCount)
         self.get_config = rospy.ServiceProxy('get_config', GetConfig)
+        self.get_params = rospy.ServiceProxy('get_params', Params)
+
+
+        rospy.wait_for_service('capture')
+        rospy.wait_for_service('get_params')
+
+        self.config_path, self.save_path, self.circled_param, self.circle_filter_param, self.circle_luv_param = self.set_params()
+        # SUBS
+
+
+        self.balloon_sub = rospy.Subscriber(self.circled_param, RosImg, self.img_callback, queue_size = 1)
+        self.filter_sub  = rospy.Subscriber(self.circle_filter_param, RosImg, self.filter_callback, queue_size = 1)
+        self.filter_luv  = rospy.Subscriber(self.circle_luv_param, RosImg, self.luv_callback, queue_size = 1)
+        self.hsv = message_filters.Subscriber(self.circle_filter_param, RosImg)
+        self.luv = message_filters.Subscriber(self.circle_luv_param, RosImg)
+
+        self.ts = message_filters.ApproximateTimeSynchronizer([self.luv,  self.hsv], 1, 0.5)
+        self.ts.registerCallback(self.both_callback)
+        
+        self.colors = self.load_config(self.config_path)
+        self.add_buttons(self.colors)
+        context.add_widget(self._widget)
 
 
         if context.serial_number() > 1:
@@ -96,21 +113,20 @@ class ColorPlugin(Plugin):
 
 
 
-        # DEFAULT IMAGE
+        # # DEFAULT IMAGE
         # img = cv2.imread('/home/mrs/balloon_workspace/src/ros_packages/balloon_color_picker/data/blue.png')
        
-        cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        # cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        h,w,c = img.shape
-        q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
+        # h,w,c = img.shape
+        # q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
 
 
-        q = QPixmap.fromImage(q_img)
+        # q = QPixmap.fromImage(q_img)
         
         #DIRECTORY
         #default
-        self.dir = '/home/mrs/.ros/'
-        self._widget.directory.setText(self.dir)
+        self._widget.directory.setText(self.save_path)
         self._widget.save_config.clicked.connect(self.save_config)
 
 
@@ -202,56 +218,89 @@ class ColorPlugin(Plugin):
         self._widget.change_luv.clicked.connect(self.switch_view_luv)
         self._widget.capture.clicked.connect(self.capture)
         self._widget.clear.clicked.connect(self.clear)
-        self._widget.wdg_img.setPixmap(q)
+        # self._widget.wdg_img.setPixmap(q)
         # self._widget.box_layout.addWidget(self.toolbar)
         # self._widget.inner.box_layout.addWidget(self.canvas)
-   
-        self.colors = self.load_config('/home/mrs/.ros/balloon_config.yaml')
-        self.add_buttons(self.colors)
-        context.add_widget(self._widget)
+ 
+        vbx = QVBoxLayout()
+        but_hsv = QRadioButton()
+        but_hsv.setText('HSV')
+        but_hsv.setChecked(True)
+        self.color_space = 'HSV'
+        but_hsv.clicked.connect(self.radio_factory('HSV'))
+        vbx.addWidget(but_hsv)
+        but_lab = QRadioButton()
+        but_lab.setText('LAB')
+        but_lab.clicked.connect(self.radio_factory('LAB'))
+        vbx.addWidget(but_lab)
+        vbx.addStretch(1)
+
+        self._widget.radio_buttons.setLayout(vbx)
+
+        self.plotted = False
+
+
+
+
+    def radio_factory(self, selector):
+        self.color_space = selector
+        def radio():
+            print(selector)
+        return radio  
 
 
 
     def plot(self, h,s,v,l,u,lv, means, sigmas):
-        mean_h, mean_s, mean_v, mean_l, mean_u, mean_lv = means
-        std_h, std_s, std_v, std_l, std_u, std_lv = sigmas
+        self.mean_h, self.mean_s, self.mean_v, self.mean_l, self.mean_u, self.mean_lv = means
+        self.std_h, self.std_s, self.std_v, self.std_l, self.std_u, self.std_lv = sigmas
 
-        # data = [random.random() for i in range(10)]
-
-        # create an axis
-        # ax = self.figure.add_subplot(111)
-
-        # discards the old graph
-        # ax.clear()
-
-        # plot data
-        # ax.plot(data, '*-')
-        
         self.figure.suptitle('HSV', fontsize=20)
         ax =self.figure.add_subplot(221)
         ax.clear()
         ax.hist(h, normed=True)
         ax.set_title('H', fontsize=16)
+        ax.set_xlim([0,180])
         xmin, xmax = (0,180)
         x = np.linspace(xmin, xmax, 180)
-        y = norm.pdf(x,mean_h,std_h)
+        y = norm.pdf(x,self.mean_h,self.std_h)
         ax.plot(x, y)
+        #thresholds
+        v = float(self._widget.sigma_slider.value())/2
+
+        ax.axvline(self.mean_h+self.std_h*v,color='r')
+        ax.axvline(self.mean_h-self.std_h*v,color='g')
+
         sx =self.figure.add_subplot(222)
         sx.clear()
         sx.hist(s, normed=True)
         sx.set_title('S', fontsize=16)
-        xmin, xmax = (0,255)
+        amin, xmax = (0,255)
+        sx.set_xlim([0,255])
         x = np.linspace(xmin, xmax, 255)
-        y = norm.pdf(x,mean_s,std_s)
+        y = norm.pdf(x,self.mean_s,self.std_s)
         sx.plot(x, y)
+
+        #thresholds
+        v = float(self._widget.sigma_slider_s.value())/2
+
+        sx.axvline(self.mean_s+self.std_s*v,color='r')
+        sx.axvline(self.mean_s-self.std_s*v,color='g')
+
         vx =self.figure.add_subplot(223)
         vx.clear()
         vx.hist(v, normed=True)
         vx.set_title('V', fontsize=16)
         xmin, xmax = (0,255)
+        vx.set_xlim([0,255])
         x = np.linspace(xmin, xmax, 255)
-        y = norm.pdf(x,mean_v,std_v)
+        y = norm.pdf(x,self.mean_v,self.std_v)
         vx.plot(x, y)
+
+        #thresholds
+        v = float(self._widget.sigma_slider_v.value())/2
+
+        vx.axvline(self.mean_v+self.std_v*v,color='r')
+        vx.axvline(self.mean_v-self.std_v*v,color='g')
 
         # refresh canvas
         self.canvas.draw()
@@ -262,28 +311,125 @@ class ColorPlugin(Plugin):
         ax.set_title('L', fontsize=16)
         ax.hist(l, normed=True)
         xmin, xmax = (0,255)
+        ax.set_xlim([0,255])
         x = np.linspace(xmin, xmax, 225)
-        y = norm.pdf(x,mean_l,std_l)
+        y = norm.pdf(x,self.mean_l,self.std_l)
         ax.plot(x, y)
+        #thresholds
+        v = float(self._widget.sigma_slider_lab.value())/2
+
+        ax.axvline(self.mean_l+self.std_l*v,color='r')
+        ax.axvline(self.mean_l-self.std_l*v,color='g')
+
+
         sx =self.figure_luv.add_subplot(222)
         sx.clear()
         sx.set_title('A', fontsize=16)
         sx.hist(u, normed=True)
         xmin, xmax = (0,256)
         x = np.linspace(xmin, xmax, 256)
-        y = norm.pdf(x,mean_u,std_u)
+        sx.set_xlim([0,256])
+        y = norm.pdf(x,self.mean_u,self.std_u)
         sx.plot(x, y)
+        #thresholds
+        v = float(self._widget.sigma_slider_a.value())/2
+
+        sx.axvline(self.mean_u+self.std_u*v,color='r')
+        sx.axvline(self.mean_u-self.std_u*v,color='g')
+
+
         vx =self.figure_luv.add_subplot(223)
         vx.clear()
         vx.set_title('B', fontsize=16)
         vx.hist(lv, normed=True)
         xmin, xmax = (0,223)
+        vx.set_xlim([0,223])
         x = np.linspace(xmin, xmax, 223)
-        y = norm.pdf(x,mean_lv,std_lv)
+        y = norm.pdf(x,self.mean_lv,self.std_lv)
         vx.plot(x, y)
+
+        #thresholds
+        v = float(self._widget.sigma_slider_b.value())/2
+
+        vx.axvline(self.mean_lv+self.std_lv*v,color='r')
+        vx.axvline(self.mean_lv-self.std_lv*v,color='g')
+
 
         # refresh canvas
         self.canvas_luv.draw()
+        self.plotted = True
+
+    def update_plots(self):
+        ax = self.figure.get_axes()[0]
+        sx = self.figure.get_axes()[1]
+        vx = self.figure.get_axes()[2]
+        # print(ax.lines)
+
+        #thresholds
+        del ax.lines[len(ax.lines)-1]
+        del ax.lines[len(ax.lines)-1]
+
+        up = self.mean_h+self.std_h*self.sigma_h
+        if up > 180:
+            up -=180
+        down = self.mean_h-self.std_h*self.sigma_h
+        if down < 0:
+            down +=180
+        ax.axvline(up,color='r')
+        ax.axvline(down,color='g')
+
+        #thresholds
+
+        del sx.lines[len(sx.lines)-1]
+        del sx.lines[len(sx.lines)-1]
+        sx.axvline(self.mean_s+self.std_s*self.sigma_s,color='r')
+        sx.axvline(self.mean_s-self.std_s*self.sigma_s,color='g')
+
+
+        #thresholds
+
+        del vx.lines[len(vx.lines)-1]
+        del vx.lines[len(vx.lines)-1]
+        vx.axvline(self.mean_v+self.std_v*self.sigma_v,color='r')
+        vx.axvline(self.mean_v-self.std_v*self.sigma_v,color='g')
+
+        self.canvas.draw()
+
+    def update_plots_lab(self):
+        # refresh canvas
+        ax = self.figure_luv.get_axes()[0]
+        sx = self.figure_luv.get_axes()[1]
+        vx = self.figure_luv.get_axes()[2]
+        # print(ax.lines)
+        #thresholds
+        del ax.lines[len(ax.lines)-1]
+        del ax.lines[len(ax.lines)-1]
+
+        ax.axvline(self.mean_l+self.std_l*self.sigma_l,color='r')
+        ax.axvline(self.mean_l-self.std_l*self.sigma_l,color='g')
+
+
+        #thresholds
+        del sx.lines[len(sx.lines)-1]
+        del sx.lines[len(sx.lines)-1]
+
+        sx.axvline(self.mean_u+self.std_u*self.sigma_a,color='r')
+        sx.axvline(self.mean_u-self.std_u*self.sigma_a,color='g')
+
+
+
+        #thresholds
+        del vx.lines[len(vx.lines)-1]
+        del vx.lines[len(vx.lines)-1]
+
+        vx.axvline(self.mean_lv+self.std_lv*self.sigma_b,color='r')
+        vx.axvline(self.mean_lv-self.std_lv*self.sigma_b,color='g')
+
+
+        # refresh canvas
+        self.canvas_luv.draw()
+ 
+
 
 
     def img_callback(self,data):
@@ -296,7 +442,6 @@ class ColorPlugin(Plugin):
         q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
 
 
-        # q = QPixmap('/home/mrs/balloon_workspace/src/ros_packages/balloon_color_picker/data/blue.png')
         q = QPixmap.fromImage(q_img)
         self._widget.wdg_img.setPixmap(q)
 
@@ -314,9 +459,7 @@ class ColorPlugin(Plugin):
 
         h,w,c = img.shape
         q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
-
-
-        # q = QPixmap('/home/mrs/balloon_workspace/src/ros_packages/balloon_color_picker/data/blue.png')
+        
         q = QPixmap.fromImage(q_img)
         self._widget.wdg_img.setPixmap(q)
 
@@ -330,7 +473,6 @@ class ColorPlugin(Plugin):
         q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
 
 
-        # q = QPixmap('/home/mrs/balloon_workspace/src/ros_packages/balloon_color_picker/data/blue.png')
         q = QPixmap.fromImage(q_img)
         self._widget.wdg_img.setPixmap(q)
 
@@ -351,11 +493,9 @@ class ColorPlugin(Plugin):
         both = np.hstack((hsv_2,luv_2))
         dif = (img.shape[0] - both.shape[0])//2
         img[dif:img.shape[0]-dif,0:img.shape[1]] = both
-        # rospy.loginfo('dif {} shape {} both shape {} data {}'.format([dif,img.shape[0]-dif],img.shape, both.shape))
         q_img = QImage(both.data, both.shape[1],both.shape[0],3*both.shape[1], QImage.Format_RGB888)
 
 
-        # q = QPixmap('/home/mrs/balloon_workspace/src/ros_packages/balloon_color_picker/data/blue.png')
         q = QPixmap.fromImage(q_img)
         self._widget.wdg_img.setPixmap(q)
 
@@ -370,6 +510,9 @@ class ColorPlugin(Plugin):
         self.sigma_v = float(self._widget.sigma_slider_v.value())/2
         res = self.sigma_caller(self.sigma_h, self.sigma_s, self.sigma_v)
 
+        self.update_plots()
+    
+        
         self._widget.sigma_value.setText('Sigma H value: {}'.format(self.sigma_h))
         self._widget.sigma_value_s.setText('Sigma S value: {}'.format(self.sigma_s))
         self._widget.sigma_value_v.setText('Sigma V value: {}'.format(self.sigma_v))
@@ -380,13 +523,14 @@ class ColorPlugin(Plugin):
         self.sigma_l = float(self._widget.sigma_slider_lab.value())/2
         self.sigma_a = float(self._widget.sigma_slider_a.value())/2
         self.sigma_b = float(self._widget.sigma_slider_b.value())/2
+        self.update_plots_lab()
         # rospy.loginfo('value {}'.format(self.sigma_l))
         self.sigma_lab_caller(self.sigma_l, self.sigma_a, self.sigma_b)
         self._widget.sigma_value_lab.setText('Sigma L value: {}'.format(self.sigma_l))
         self._widget.sigma_value_a.setText('Sigma A value: {}'.format(self.sigma_a))
         self._widget.sigma_value_b.setText('Sigma B value: {}'.format(self.sigma_b))
 
-       
+     
 
     
     def capture(self):
@@ -427,15 +571,15 @@ class ColorPlugin(Plugin):
         self._widget.label_lab.show()
 
     def load_config(self, path):
-        f = file(path)
+        f = file(path,'r')
+        print(path)
         res = yaml.safe_load(f)
         return res['colors'] 
 
     def clicked(self, color):
 
         def clicker():
-            self._widget.directory.setText(self.dir+'{}.yaml'.format(color))
-            print(color)
+            self._widget.directory.setText(self.save_path+'{}.yaml'.format(color))
         return clicker
 
     def add_buttons(self, colors):
@@ -450,8 +594,11 @@ class ColorPlugin(Plugin):
 
     def save_config(self):
         resp  = self.get_config()
-
+        save_obj = {}
         conf_obj = {}
+        save_dir = self._widget.directory.text()
+        name = save_dir.split('/')
+        name = name[len(name)-1].split('.')[0]
         #HSV
         conf_obj['hsv_color_center'] = resp.h[0]
         conf_obj['hsv_color_range'] = resp.h[1]
@@ -467,9 +614,21 @@ class ColorPlugin(Plugin):
         conf_obj['lab_b_center'] = resp.b[0]
         conf_obj['lab_b_range'] = resp.b[1]
 
-        save_dir = self._widget.directory.text()
+        conf_obj['colorspace'] = self.color_space
+        save_obj[name] = conf_obj
+        if os.path.isdir(save_dir):
+            return 
         f = file(save_dir,'w')
-        yaml.safe_dump(conf_obj,f)
+        print('saved to dir {}'.format(save_dir))
+        yaml.safe_dump(save_obj,f)
+
+    def set_params(self):
+        
+        resp = self.get_params()
+        print(resp)
+        print('params loaded')
+        return resp.config_path, resp.save_path, resp.circled,resp.circle_filter, resp.circle_luv
+
 
     def shutdown_plugin(self):
         # TODO unregister all publishers here

@@ -5,6 +5,7 @@ import numpy as np
 from scipy import ndimage
 import cv2
 import pylab as plb
+import time
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy import asarray as ar,exp
@@ -549,6 +550,26 @@ def test_mask():
                 
     return 
 
+def plotting():
+
+    h = np.loadtxt('../data/h.txt')
+    f = plt.figure(1)
+    ax = f.add_subplot(111)
+    bx = f.add_subplot(211)
+
+
+    ax.hist(h)
+
+    print(f.get_axes())
+    print(ax.lines)
+    ax.axvline(x=20, color='r')
+    ax.axvline(x=30, color='g')
+
+    del ax.lines[0]
+
+    ax.axvline(x=50, color='c')
+    
+    plt.show()
 
 
 # main()
@@ -557,10 +578,11 @@ def test_mask():
 # filter_colors()
 # np_hist()
 # test_mean()
-get_indexes()
+# get_indexes()
 # tst_index()
 # test_data()
 # double_range()
 # test_mask()
 # test_circ()
 # test_high()
+plotting()
