@@ -265,10 +265,10 @@ class ColorPlugin(Plugin):
         y = norm.pdf(x,self.mean_h,self.std_h)
         ax.plot(x, y)
         #thresholds
-        v = float(self._widget.sigma_slider.value())/2
+        val = float(self._widget.sigma_slider.value())/2
 
-        ax.axvline(self.mean_h+self.std_h*v,color='r')
-        ax.axvline(self.mean_h-self.std_h*v,color='g')
+        ax.axvline(self.mean_h+self.std_h*val,color='r')
+        ax.axvline(self.mean_h-self.std_h*val,color='g')
 
         sx =self.figure.add_subplot(222)
         sx.clear()
@@ -281,10 +281,10 @@ class ColorPlugin(Plugin):
         sx.plot(x, y)
 
         #thresholds
-        v = float(self._widget.sigma_slider_s.value())/2
+        val = float(self._widget.sigma_slider_s.value())/2
 
-        sx.axvline(self.mean_s+self.std_s*v,color='r')
-        sx.axvline(self.mean_s-self.std_s*v,color='g')
+        sx.axvline(self.mean_s+self.std_s*val,color='r')
+        sx.axvline(self.mean_s-self.std_s*val,color='g')
 
         vx =self.figure.add_subplot(223)
         vx.clear()
@@ -292,15 +292,16 @@ class ColorPlugin(Plugin):
         vx.set_title('V', fontsize=16)
         xmin, xmax = (0,255)
         vx.set_xlim([0,255])
+        # vx.set_ylim([0,max(v)])
         x = np.linspace(xmin, xmax, 255)
         y = norm.pdf(x,self.mean_v,self.std_v)
         vx.plot(x, y)
 
         #thresholds
-        v = float(self._widget.sigma_slider_v.value())/2
+        val = float(self._widget.sigma_slider_v.value())/2
 
-        vx.axvline(self.mean_v+self.std_v*v,color='r')
-        vx.axvline(self.mean_v-self.std_v*v,color='g')
+        vx.axvline(self.mean_v+self.std_v*val,color='r',ymax=1)
+        vx.axvline(self.mean_v-self.std_v*val,color='g',ymax=1)
 
         # refresh canvas
         self.canvas.draw()
@@ -316,10 +317,10 @@ class ColorPlugin(Plugin):
         y = norm.pdf(x,self.mean_l,self.std_l)
         ax.plot(x, y)
         #thresholds
-        v = float(self._widget.sigma_slider_lab.value())/2
+        val = float(self._widget.sigma_slider_lab.value())/2
 
-        ax.axvline(self.mean_l+self.std_l*v,color='r')
-        ax.axvline(self.mean_l-self.std_l*v,color='g')
+        ax.axvline(self.mean_l+self.std_l*val,color='r')
+        ax.axvline(self.mean_l-self.std_l*val,color='g')
 
 
         sx =self.figure_luv.add_subplot(222)
@@ -332,10 +333,10 @@ class ColorPlugin(Plugin):
         y = norm.pdf(x,self.mean_u,self.std_u)
         sx.plot(x, y)
         #thresholds
-        v = float(self._widget.sigma_slider_a.value())/2
+        val = float(self._widget.sigma_slider_a.value())/2
 
-        sx.axvline(self.mean_u+self.std_u*v,color='r')
-        sx.axvline(self.mean_u-self.std_u*v,color='g')
+        sx.axvline(self.mean_u+self.std_u*val,color='r')
+        sx.axvline(self.mean_u-self.std_u*val,color='g')
 
 
         vx =self.figure_luv.add_subplot(223)
@@ -349,10 +350,10 @@ class ColorPlugin(Plugin):
         vx.plot(x, y)
 
         #thresholds
-        v = float(self._widget.sigma_slider_b.value())/2
+        val = float(self._widget.sigma_slider_b.value())/2
 
-        vx.axvline(self.mean_lv+self.std_lv*v,color='r')
-        vx.axvline(self.mean_lv-self.std_lv*v,color='g')
+        vx.axvline(self.mean_lv+self.std_lv*val,color='r')
+        vx.axvline(self.mean_lv-self.std_lv*val,color='g')
 
 
         # refresh canvas
@@ -390,8 +391,8 @@ class ColorPlugin(Plugin):
 
         del vx.lines[len(vx.lines)-1]
         del vx.lines[len(vx.lines)-1]
-        vx.axvline(self.mean_v+self.std_v*self.sigma_v,color='r')
-        vx.axvline(self.mean_v-self.std_v*self.sigma_v,color='g')
+        vx.axvline(self.mean_v+self.std_v*self.sigma_v,color='r', ymax=1)
+        vx.axvline(self.mean_v-self.std_v*self.sigma_v,color='g', ymax=1)
 
         self.canvas.draw()
 
