@@ -16,8 +16,8 @@
       <remap from="circle_hsv" to="~circled_hsv" />
       <remap from="circle_lab" to="~circled_lab" />
       <!-- Params -->
-      <param name='save_dir' value='$(find object_detect)/config/'/>
-      <param name='config_path' value='$(find object_detect)/config/balloon_config.yaml'/>
+      <param name='save_dir' value='$(find balloon_color_picker)/'/>
+      <param name='config_path' value='$(find balloon_color_picker)/balloon_config.yaml'/>
 
 
     </node>
