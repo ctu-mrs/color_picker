@@ -227,11 +227,11 @@ class ColorPlugin(Plugin):
         but_hsv.setText('HSV')
         but_hsv.setChecked(True)
         self.color_space = 'HSV'
-        but_hsv.clicked.connect(self.radio_factory('HSV'))
+        but_hsv.clicked.connect(self.set_colorspace_hsv)
         vbx.addWidget(but_hsv)
         but_lab = QRadioButton()
         but_lab.setText('LAB')
-        but_lab.clicked.connect(self.radio_factory('LAB'))
+        but_lab.clicked.connect(self.set_colorspace_lab)
         vbx.addWidget(but_lab)
         vbx.addStretch(1)
 
@@ -241,12 +241,12 @@ class ColorPlugin(Plugin):
 
 
 
+    def set_colorspace_hsv(self):
+        self.color_space = 'HSV'
 
-    def radio_factory(self, selector):
-        self.color_space = selector
-        def radio():
-            print(selector)
-        return radio  
+    def set_colorspace_lab(self):
+        self.color_space = 'LAB'
+
 
 
 
@@ -580,7 +580,7 @@ class ColorPlugin(Plugin):
     def clicked(self, color):
 
         def clicker():
-            self._widget.directory.setText(self.save_path+'{}.yaml'.format(color))
+            self._widget.directory.setText(self.save_path+'/{}.yaml'.format(color))
         return clicker
 
     def add_buttons(self, colors):
@@ -595,33 +595,35 @@ class ColorPlugin(Plugin):
 
     def save_config(self):
         resp  = self.get_config()
-        save_obj = {}
         conf_obj = {}
         save_dir = self._widget.directory.text()
         name = save_dir.split('/')
         name = name[len(name)-1].split('.')[0]
         #HSV
-        conf_obj['hsv_color_center'] = resp.h[0]
-        conf_obj['hsv_color_range'] = resp.h[1]
-        conf_obj['hsv_saturation_center'] = resp.s[0]
-        conf_obj['hsv_saturation_range'] = resp.s[1]
-        conf_obj['hsv_brightness_center'] = resp.v[0]
-        conf_obj['hsv_brightness_range'] = resp.v[1]
+        hsv = {}
+        hsv['hue_center'] = resp.h[0]
+        hsv['hue_range'] = resp.h[1]
+        hsv['sat_center'] = resp.s[0]
+        hsv['sat_range'] = resp.s[1]
+        hsv['val_center'] = resp.v[0]
+        hsv['val_range'] = resp.v[1]
+        conf_obj['hsv'] = hsv
         #LAB 
-        conf_obj['lab_l_center'] = resp.l[0]
-        conf_obj['lab_l_range'] = resp.l[1]
-        conf_obj['lab_a_center'] = resp.a[0]
-        conf_obj['lab_a_range'] = resp.a[1]
-        conf_obj['lab_b_center'] = resp.b[0]
-        conf_obj['lab_b_range'] = resp.b[1]
+        lab = {}
+        lab['l_center'] = resp.l[0]
+        lab['l_range'] = resp.l[1]
+        lab['a_center'] = resp.a[0]
+        lab['a_range'] = resp.a[1]
+        lab['b_center'] = resp.b[0]
+        lab['b_range'] = resp.b[1]
+        conf_obj['lab'] = lab
 
-        conf_obj['colorspace'] = self.color_space
-        save_obj[name] = conf_obj
+        conf_obj['binarization_method'] = self.color_space
         if os.path.isdir(save_dir):
             return 
         f = file(save_dir,'w')
         print('saved to dir {}'.format(save_dir))
-        yaml.safe_dump(save_obj,f)
+        yaml.safe_dump(conf_obj,f)
 
     def set_params(self):
         
