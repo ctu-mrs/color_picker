@@ -97,8 +97,8 @@ class ColorCapture():
 
     def balloon_call(self,data):
 
-        img = self.bridge.imgmsg_to_cv2(data)
-        img = img.copy()
+        img = self.bridge.imgmsg_to_cv2(data, "bgr8")
+        # img = img.copy()
         if self.services_ready == False:
 
             rospy.loginfo('first {}'.format(self.services_ready))
@@ -122,13 +122,13 @@ class ColorCapture():
         cv2.circle(img, cv,r, 20 ,thickness=7, lineType=8, shift=0)
         # imgmsg = self.bridge.cv2_to_imgmsg(img, 'rgb8')
         imgmsg = self.bridge.cv2_to_imgmsg(img)
-        img_circle = img.copy()
+        imgmsg.encoding = "bgr8"
         self.circle_pub.publish(imgmsg)
 
 
     def balloon_filter(self,data):
 
-        img = self.bridge.imgmsg_to_cv2(data)
+        img = self.bridge.imgmsg_to_cv2(data, "bgr8")
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
         lower = np.array([self.h_mean-self.h_sigma*self.sigma_multi_h,self.s_mean-self.s_sigma*self.sigma_multi_s,self.v_mean-self.v_sigma*self.sigma_multi_v])
@@ -176,10 +176,11 @@ class ColorCapture():
         res = cv2.bitwise_and(img,img, mask= mask)
         # msg = self.bridge.cv2_to_imgmsg(res,'rgb8')
         msg = self.bridge.cv2_to_imgmsg(res)
+        msg.encoding = "bgr8"
         self.circle_hsv.publish(msg)
     
     def balloon_filter_lab(self,data):
-        img = self.bridge.imgmsg_to_cv2(data)
+        img = self.bridge.imgmsg_to_cv2(data, "bgr8")
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
 
         lower = np.array([self.l_mean-self.l_sigma*self.sigma_multi_l,self.a_mean-self.a_sigma*self.sigma_multi_a,self.b_mean-self.b_sigma*self.sigma_multi_b])
@@ -193,6 +194,7 @@ class ColorCapture():
         res = cv2.bitwise_and(img,img, mask= mask)
         # msg = self.bridge.cv2_to_imgmsg(res,'rgb8')
         msg = self.bridge.cv2_to_imgmsg(res)
+        msg.encoding = "bgr8"
         self.circle_lab.publish(msg)
 
 

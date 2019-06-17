@@ -436,8 +436,8 @@ class ColorPlugin(Plugin):
     def img_callback(self,data):
         if self.view != RGB:
             return
-        img = self.brd.imgmsg_to_cv2(data)
-        cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = self.brd.imgmsg_to_cv2(data, 'rgb8')
+        # cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         h,w,c = img.shape
         q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
@@ -455,8 +455,8 @@ class ColorPlugin(Plugin):
     def filter_callback(self,data):
         if self.view != HSV:
             return
-        img = self.brd.imgmsg_to_cv2(data)
-        cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = self.brd.imgmsg_to_cv2(data, 'rgb8')
+        # cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         h,w,c = img.shape
         q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
@@ -467,8 +467,8 @@ class ColorPlugin(Plugin):
     def luv_callback(self,data):
         if self.view != LUV:
             return
-        img = self.brd.imgmsg_to_cv2(data)
-        cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = self.brd.imgmsg_to_cv2(data, 'rgb8')
+        # cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         h,w,c = img.shape
         q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
@@ -484,8 +484,8 @@ class ColorPlugin(Plugin):
             return
         img_luv = self.brd.imgmsg_to_cv2(luv)
         img_hsv = self.brd.imgmsg_to_cv2(hsv)
-        cv2.cvtColor(img_luv, cv2.COLOR_BGR2RGB)
-        cv2.cvtColor(img_hsv, cv2.COLOR_BGR2RGB)
+        # cv2.cvtColor(img_luv, cv2.COLOR_BGR2RGB)
+        # cv2.cvtColor(img_hsv, cv2.COLOR_BGR2RGB)
 
         h,w,c = img_luv.shape
         img = np.zeros([h,w,c])
