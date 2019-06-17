@@ -356,12 +356,12 @@ class ColorCapture():
         self.mask = zero
     def get_config(self, req):
         
-        return GetConfigResponse((self.h_mean, self.h_sigma*self.sigma_multi_h),
-                                 (self.s_mean, self.s_sigma*self.sigma_multi_s),
-                                 (self.v_mean, self.v_sigma*self.sigma_multi_v),
-                                 (self.l_mean, self.l_sigma*self.sigma_multi_l),
-                                 (self.a_mean, self.a_sigma*self.sigma_multi_a),
-                                 (self.b_mean, self.b_sigma*self.sigma_multi_b),
+        return GetConfigResponse((self.h_mean, self.h_sigma*self.sigma_multi_h*2),
+                                 (self.s_mean, self.s_sigma*self.sigma_multi_s*2),
+                                 (self.v_mean, self.v_sigma*self.sigma_multi_v*2),
+                                 (self.l_mean, self.l_sigma*self.sigma_multi_l*2),
+                                 (self.a_mean, self.a_sigma*self.sigma_multi_a*2),
+                                 (self.b_mean, self.b_sigma*self.sigma_multi_b*2),
                                  )
 
     def save_pic(self,req):
