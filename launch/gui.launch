@@ -9,8 +9,8 @@
 
 
       <!-- Subscribed topics -->
-      <remap from="image_topic" to="/usb_cam/image_raw" />
-      <!-- <remap from="image_topic" to="/uav/rs_d435/color/image_raw" /> -->
+      <!-- <remap from="image_topic" to="/usb_cam/image_raw" /> -->
+      <remap from="image_topic" to="/$(arg uav_name)/rs_d435/color/image_raw" />
       <!-- <remap from="image_topic" to="/mv_26805883/image_raw" /> -->
       <!-- Published topics -->
       <remap from="circle_topic" to="~circled" />
