@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="uav_name" default="uav" />
+  <arg name="uav_name" default="$(optenv UAV_NAME uav)"/>
 
 
     <arg name="gui" default="true" />
