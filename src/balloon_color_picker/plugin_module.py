@@ -1,5 +1,6 @@
 from __future__ import division
 import os
+import subprocess
 import rospy
 import rospkg
 import cv2
@@ -622,8 +623,16 @@ class ColorPlugin(Plugin):
         if os.path.isdir(save_dir):
             return 
         f = file(save_dir,'w')
+        path_to_script = os.path.join(rospkg.RosPack().get_path('balloon_color_picker'), 'scripts', 'copy_to_uav.sh')
+        comm = '.'+path_to_script+' $UAV_NAME '+save_dir+' '+ name
         print('saved to dir {}'.format(save_dir))
         yaml.safe_dump(conf_obj,f)
+
+        print('exectuted command ')
+        print(path_to_script)
+        print(save_dir)
+        print(name)
+        print(subprocess.check_call([path_to_script,'uav42', save_dir, name+'.yaml']))
 
     def set_params(self):
         
