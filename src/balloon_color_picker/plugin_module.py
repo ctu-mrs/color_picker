@@ -632,7 +632,7 @@ class ColorPlugin(Plugin):
         print(path_to_script)
         print(save_dir)
         print(name)
-        print(subprocess.check_call([path_to_script,'uav42', save_dir, name+'.yaml']))
+        print(subprocess.check_call([path_to_script,os.environ['UAV_NAME'], save_dir, name+'.yaml']))
 
     def set_params(self):
         
