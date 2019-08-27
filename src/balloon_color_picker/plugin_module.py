@@ -60,8 +60,8 @@ class ColorPlugin(Plugin):
         parser = ArgumentParser()
         # Add argument(s) to the parser.
         parser.add_argument("-q", "--quiet", action="store_true",
-                      dest="quiet",
-                      help="Put plugin in silent mode")
+                            dest="quiet",
+                            help="Put plugin in silent mode")
         args, unknowns = parser.parse_known_args(context.argv())
         if not args.quiet:
             print 'arguments: ', args
@@ -75,9 +75,9 @@ class ColorPlugin(Plugin):
         # Give QObjects reasonable names
         self._widget.setObjectName('ColorPluginUi')
 
-        # print(rospy.get_param('gui_name')) 
-        # ROS services 
- 
+        # print(rospy.get_param('gui_name'))
+        # ROS services
+
         self.sigma_caller = rospy.ServiceProxy('change_sigma', ChangeSigma)
         self.sigma_lab_caller = rospy.ServiceProxy('change_sigma_lab', ChangeSigmaLab)
         self.caller = rospy.ServiceProxy('capture', Capture)
@@ -90,7 +90,7 @@ class ColorPlugin(Plugin):
         rospy.wait_for_service('capture')
         rospy.wait_for_service('get_params')
 
-        self.config_path, self.save_path, self.circled_param, self.circle_filter_param, self.circle_luv_param = self.set_params()
+        self.config_path, self.save_path, self.circled_param, self.circle_filter_param, self.circle_luv_param, self.save_to_drone = self.set_params()
         # SUBS
 
 
@@ -102,7 +102,7 @@ class ColorPlugin(Plugin):
 
         self.ts = message_filters.ApproximateTimeSynchronizer([self.luv,  self.hsv], 1, 0.5)
         self.ts.registerCallback(self.both_callback)
-        
+
         self.colors = self.load_config(self.config_path)
         self.add_buttons(self.colors)
         context.add_widget(self._widget)
@@ -116,7 +116,7 @@ class ColorPlugin(Plugin):
 
         # # DEFAULT IMAGE
         # img = cv2.imread('/home/mrs/balloon_workspace/src/ros_packages/balloon_color_picker/data/blue.png')
-       
+
         # cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # h,w,c = img.shape
@@ -124,7 +124,7 @@ class ColorPlugin(Plugin):
 
 
         # q = QPixmap.fromImage(q_img)
-        
+
         #DIRECTORY
         #default
         self._widget.directory.setText(self.save_path)
@@ -143,7 +143,7 @@ class ColorPlugin(Plugin):
         # self.toolbar.setParent(self._widget.inner)
         # self.toolbar_luv.setParent(self._widget.inner_luv)
         self.canvas_luv.setParent(self._widget.inner_luv)
-    
+
         #SLIDER CONFIG
         self._widget.sigma_slider.setRange(0,100)
         self._widget.sigma_slider.setSingleStep(1)
@@ -152,7 +152,7 @@ class ColorPlugin(Plugin):
 
         self._widget.sigma_slider.valueChanged.connect(self.slider_event)
 
-        
+
 
         self._widget.sigma_slider_s.setRange(0,100)
         self._widget.sigma_slider_s.setSingleStep(1)
@@ -222,7 +222,7 @@ class ColorPlugin(Plugin):
         # self._widget.wdg_img.setPixmap(q)
         # self._widget.box_layout.addWidget(self.toolbar)
         # self._widget.inner.box_layout.addWidget(self.canvas)
- 
+
         vbx = QVBoxLayout()
         but_hsv = QRadioButton()
         but_hsv.setText('HSV')
@@ -430,7 +430,7 @@ class ColorPlugin(Plugin):
 
         # refresh canvas
         self.canvas_luv.draw()
- 
+
 
 
 
@@ -461,7 +461,7 @@ class ColorPlugin(Plugin):
 
         h,w,c = img.shape
         q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
-        
+
         q = QPixmap.fromImage(q_img)
         self._widget.wdg_img.setPixmap(q)
 
@@ -490,8 +490,8 @@ class ColorPlugin(Plugin):
 
         h,w,c = img_luv.shape
         img = np.zeros([h,w,c])
-        luv_2 = cv2.resize(img_luv, (0,0), fx=0.5, fy=0.5) 
-        hsv_2 = cv2.resize(img_hsv, (0,0), fx=0.5, fy=0.5) 
+        luv_2 = cv2.resize(img_luv, (0,0), fx=0.5, fy=0.5)
+        hsv_2 = cv2.resize(img_hsv, (0,0), fx=0.5, fy=0.5)
         both = np.hstack((hsv_2,luv_2))
         dif = (img.shape[0] - both.shape[0])//2
         img[dif:img.shape[0]-dif,0:img.shape[1]] = both
@@ -513,13 +513,13 @@ class ColorPlugin(Plugin):
         res = self.sigma_caller(self.sigma_h, self.sigma_s, self.sigma_v)
 
         self.update_plots()
-    
-        
+
+
         self._widget.sigma_value.setText('Sigma H value: {}'.format(self.sigma_h))
         self._widget.sigma_value_s.setText('Sigma S value: {}'.format(self.sigma_s))
         self._widget.sigma_value_v.setText('Sigma V value: {}'.format(self.sigma_v))
 
- 
+
     def slider_event_lab(self):
 
         self.sigma_l = float(self._widget.sigma_slider_lab.value())/2
@@ -532,11 +532,11 @@ class ColorPlugin(Plugin):
         self._widget.sigma_value_a.setText('Sigma A value: {}'.format(self.sigma_a))
         self._widget.sigma_value_b.setText('Sigma B value: {}'.format(self.sigma_b))
 
-     
 
-    
+
+
     def capture(self):
-    
+
         rospy.wait_for_service('capture')
         req = Capture()
         res= self.caller()
@@ -545,7 +545,7 @@ class ColorPlugin(Plugin):
         self._widget.image_count.setText('Samples taken: {} '.format(res.count))
         return
 
-        
+
 
     def switch_view_hsv(self):
         print("HSV")
@@ -553,7 +553,7 @@ class ColorPlugin(Plugin):
             self.view = RGB
             return
         self.view = HSV
-        
+
     def switch_view_luv(self):
         print("LUV")
         if self.view == LUV:
@@ -568,7 +568,7 @@ class ColorPlugin(Plugin):
 
             return
         self.view = BOTH
-               
+
         self._widget.label_hsv.show()
         self._widget.label_lab.show()
 
@@ -576,7 +576,7 @@ class ColorPlugin(Plugin):
         f = file(path,'r')
         print(path)
         res = yaml.safe_load(f)
-        return res['colors'] 
+        return res['colors']
 
     def clicked(self, color):
 
@@ -609,7 +609,7 @@ class ColorPlugin(Plugin):
         hsv['val_center'] = resp.v[0]
         hsv['val_range'] = resp.v[1]
         conf_obj['hsv'] = hsv
-        #LAB 
+        #LAB
         lab = {}
         lab['l_center'] = resp.l[0]
         lab['l_range'] = resp.l[1]
@@ -621,25 +621,24 @@ class ColorPlugin(Plugin):
 
         conf_obj['binarization_method'] = self.color_space
         if os.path.isdir(save_dir):
-            return 
+            return
         f = file(save_dir,'w')
-        path_to_script = os.path.join(rospkg.RosPack().get_path('balloon_color_picker'), 'scripts', 'copy_to_uav.sh')
-        comm = '.'+path_to_script+' $UAV_NAME '+save_dir+' '+ name
         print('saved to dir {}'.format(save_dir))
         yaml.safe_dump(conf_obj,f)
 
-        print('exectuted command ')
-        print(path_to_script)
-        print(save_dir)
-        print(name)
-        print(subprocess.check_call([path_to_script,os.environ['UAV_NAME'], save_dir, name+'.yaml']))
+        if self.save_to_drone:
+            path_to_script = os.path.join(rospkg.RosPack().get_path('balloon_color_picker'), 'scripts', 'copy_to_uav.sh')
+            print(path_to_script)
+            print('exectuted command ')
+            print(save_dir)
+            print(subprocess.check_call([path_to_script,os.environ['UAV_NAME'], save_dir, name+'.yaml']))
 
     def set_params(self):
-        
+
         resp = self.get_params()
         print(resp)
         print('params loaded')
-        return resp.config_path, resp.save_path, resp.circled,resp.circle_filter, resp.circle_luv
+        return resp.config_path, resp.save_path, resp.circled,resp.circle_filter, resp.circle_luv, resp.save_to_drone
 
 
     def shutdown_plugin(self):
@@ -657,6 +656,6 @@ class ColorPlugin(Plugin):
         pass
 
     #def trigger_configuration(self):
-        # Comment in to signal that the plugin has a way to configure
-        # This will enable a setting button (gear icon) in each dock widget title bar
-        # Usually used to open a modal configuration dialog
+    # Comment in to signal that the plugin has a way to configure
+    # This will enable a setting button (gear icon) in each dock widget title bar
+    # Usually used to open a modal configuration dialog

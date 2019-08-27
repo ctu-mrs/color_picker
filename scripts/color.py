@@ -40,6 +40,9 @@ from balloon_color_picker.srv import (
     Params,
     ParamsResponse
 )
+from balloon_color_picker.msg import (
+    HistMsg
+)
 
 HSV = 0
 LAB = 1
@@ -57,6 +60,7 @@ class ColorCapture():
         self.bridge = CvBridge()
         self.save_dir = rospy.get_param('~save_dir')
         self.config_path= rospy.get_param('~config_path')
+        self.save_to_drone= rospy.get_param('~save_to_drone')
 
 
         self.cur_img = np.zeros([720,1280])
@@ -81,6 +85,9 @@ class ColorCapture():
         self.h_arr = []
         self.s_arr = []
         self.v_arr = []
+        self.hist_h = []
+        self.hist_s = []
+        self.hist_v = []
 
         ## lab
         self.l_mean = 0
@@ -94,6 +101,11 @@ class ColorCapture():
         self.u_arr = []
         self.lv_arr = []
 
+        self.hist_l = []
+        self.hist_a = []
+        self.hist_b = []
+
+
 
     def balloon_call(self,data):
 
@@ -102,7 +114,7 @@ class ColorCapture():
         if self.services_ready == False:
 
             rospy.loginfo('first {}'.format(self.services_ready))
-            
+
             self.capture_service = rospy.Service('capture', Capture, self.capture)
             self.sigma_service = rospy.Service('change_sigma', ChangeSigma,self.change_sigma)
             self.sigma_service = rospy.Service('change_sigma_lab', ChangeSigmaLab,self.change_sigma_lab)
@@ -140,7 +152,7 @@ class ColorCapture():
             upper_1[0] = 180
             upper_2 = copy.copy(upper)
             upper_2[0] = dif
-            
+
             lower_2 = copy.copy(lower)
             lower_2[0] = 0
             mask_1 = cv2.inRange(hsv, lower, upper_1)
@@ -178,7 +190,7 @@ class ColorCapture():
         msg = self.bridge.cv2_to_imgmsg(res)
         msg.encoding = "bgr8"
         self.circle_hsv.publish(msg)
-    
+
     def balloon_filter_lab(self,data):
         img = self.bridge.imgmsg_to_cv2(data, "bgr8")
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
@@ -206,24 +218,33 @@ class ColorCapture():
 
         t = time.time()
         h,s,v = self.get_masked_colors(img, HSV)
+        self.hist_h = np.histogram(h, bins=[180])
+        self.hist_s = np.histogram(s, bins=[255])
+        self.hist_v = np.histogram(v, bins=[255])
+
         rospy.loginfo('time for hsv {}'.format(time.time() - t))
         t = time.time()
-        l,u,lv = self.get_masked_colors(img, LAB)
+
+        l,a,b = self.get_masked_colors(img, LAB)
+        self.hist_l = np.histogram(l, bins=[255])
+        self.hist_a = np.histogram(a, bins=[255])
+        self.hist_b = np.histogram(b, bins=[255])
+
         rospy.loginfo('time for lab {}'.format(time.time() - t))
 
         t = time.time()
-        res = self.np_hist(h,s,v, l, u, lv)
-        
+        res = self.np_hist(h,s,v, l, a, b)
+
         rospy.loginfo('time for np_hist {}'.format(time.time() - t))
         if self.img_count > 0:
             self.average(res)
         else:
 
             self.h_mean,self.h_sigma  = res[0]
-           
+
             self.s_mean, self.s_sigma = res[1]
             self.v_mean, self.v_sigma = res[2]
-     
+
             self.l_mean, self.l_sigma = res[3]
             self.a_mean, self.a_sigma = res[4]
             self.b_mean, self.b_sigma = res[5]
@@ -232,7 +253,7 @@ class ColorCapture():
         self.img_count +=1
         rospy.loginfo('h {} s {} v {}'.format(self.h_mean, self.s_mean, self.v_mean))
         rospy.loginfo('l {} a {} b {}'.format(self.l_mean, self.a_mean, self.b_mean))
-        return CaptureResponse(h,s,v,(self.h_mean, self.s_mean,self.v_mean, self.l_mean, self.a_mean, self.b_mean), (self.h_sigma,self.v_sigma,self.s_sigma, self.l_sigma, self.a_sigma,self.b_sigma), l, u, lv, self.img_count)
+        return CaptureResponse(h,s,v,(self.h_mean, self.s_mean,self.v_mean, self.l_mean, self.a_mean, self.b_mean), (self.h_sigma,self.v_sigma,self.s_sigma, self.l_sigma, self.a_sigma,self.b_sigma), l, a, b, self.img_count)
 
     def change_sigma(self,request):
         self.sigma_multi_h = request.sigma_h
@@ -250,26 +271,26 @@ class ColorCapture():
 
     def average(self,res):
         h_mean,h_sigma  = res[0]
-       
+
         s_mean, s_sigma = res[1]
         v_mean, v_sigma = res[2]
- 
+
         l_mean, l_sigma = res[3]
         u_mean, u_sigma = res[4]
         lv_mean, lv_sigma = res[5]
 
         self.h_mean,self.h_sigma  = self.av_std(self.h_mean, h_mean, self.h_sigma,h_sigma)
-       
+
         self.s_mean, self.s_sigma = self.av_std(self.s_mean, s_mean, self.s_sigma,s_sigma)
-       
-        self.v_mean, self.v_sigma = self.av_std(self.v_mean, v_mean, self.v_sigma,v_sigma) 
+
+        self.v_mean, self.v_sigma = self.av_std(self.v_mean, v_mean, self.v_sigma,v_sigma)
         self.l_mean, self.l_sigma = self.av_std(self.l_mean, l_mean, self.l_sigma,l_sigma)
 
         self.a_mean, self.a_sigma = self.av_std(self.a_mean, u_mean, self.a_sigma,u_sigma)
         self.b_mean, self.b_sigma = self.av_std(self.b_mean, lv_mean, self.b_sigma,lv_sigma)
 
 
- 
+
 
     def av_std(self, mean_old, mean_new,std_old, std_new):
 
@@ -312,18 +333,18 @@ class ColorCapture():
         return GetCountResponse(self.img_count)
 
 
-    def np_hist(self,h,s,v,l,u,lv):
-        
+    def np_hist(self,h,s,v,l,a,b):
+
 
         h_mean = circmean(h, high=180)
         h_sigma = circstd(h,high=180)
 
         s_mean, s_sigma = norm.fit(s)
         v_mean, v_sigma = norm.fit(v)
- 
+
         l_mean, l_sigma = norm.fit(l)
-        u_mean, u_sigma = norm.fit(u)
-        lv_mean, lv_sigma = norm.fit(lv)
+        u_mean, u_sigma = norm.fit(a)
+        lv_mean, lv_sigma = norm.fit(b)
         return  (h_mean, h_sigma), (s_mean,s_sigma), (v_mean,v_sigma), (l_mean, l_sigma), (u_mean, u_sigma), (lv_mean, lv_sigma)
 
 
@@ -351,27 +372,48 @@ class ColorCapture():
         rows = img.shape[0]
         cols = img.shape[1]
         zero = np.zeros((img.shape[0], img.shape[1]))
-        
+
         cv2.circle(zero, (x, y), r, 1, -1)
         self.mask = zero
     def get_config(self, req):
-        
+
+        hst_msg_h = HistMsg()
+        hst_msg_h.bins = self.hist_h[0]
+        hst_msg_h.values = self.hist_h[1]
+        hst_msg_s = HistMsg()
+        hst_msg_s.bins = self.hist_s[0]
+        hst_msg_s.values = self.hist_s[1]
+        hst_msg_v = HistMsg()
+        hst_msg_v.bins = self.hist_v[0]
+        hst_msg_v.values = self.hist_v[1]
+        hst_msg_l = HistMsg()
+        hst_msg_l.bins = self.hist_l[0]
+        hst_msg_l.values = self.hist_l[1]
+        hst_msg_a = HistMsg()
+        hst_msg_a.bins = self.hist_a[0]
+        hst_msg_a.values = self.hist_a[1]
+        hst_msg_b = HistMsg()
+        hst_msg_b.bins = self.hist_b[0]
+        hst_msg_b.values = self.hist_b[1]
+
         return GetConfigResponse((self.h_mean, self.h_sigma*self.sigma_multi_h*2),
                                  (self.s_mean, self.s_sigma*self.sigma_multi_s*2),
                                  (self.v_mean, self.v_sigma*self.sigma_multi_v*2),
                                  (self.l_mean, self.l_sigma*self.sigma_multi_l*2),
                                  (self.a_mean, self.a_sigma*self.sigma_multi_a*2),
                                  (self.b_mean, self.b_sigma*self.sigma_multi_b*2),
+                                 [hst_msg_h,hst_msg_s,hst_msg_v],
+                                 [hst_msg_l,hst_msg_a,hst_msg_b],
                                  )
 
     def save_pic(self,req):
         rospy.loginfo('cur_img {}'.format(self.cur_img))
-        rospy.loginfo('ing {}'.format(cv2.imwrite('/home/mrs/last_img.png',self.cur_img)))  
-        return PicResponse() 
+        rospy.loginfo('ing {}'.format(cv2.imwrite('/home/mrs/last_img.png',self.cur_img)))
+        return PicResponse()
 
     def get_params(self, req):
-        
-        return ParamsResponse(self.config_path, self.save_dir, self.circle_pub.name, self.circle_hsv.name, self.circle_lab.name)
+
+        return ParamsResponse(self.config_path, self.save_dir, self.circle_pub.name, self.circle_hsv.name, self.circle_lab.name,self.save_to_drone)
 
 if __name__ == '__main__':
     c = ColorCapture()

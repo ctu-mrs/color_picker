@@ -6,3 +6,6 @@ float64[] v
 float64[] l
 float64[] a
 float64[] b
+HistMsg[] hsv
+HistMsg[] lab
+
