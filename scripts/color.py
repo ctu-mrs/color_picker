@@ -218,17 +218,17 @@ class ColorCapture():
 
         t = time.time()
         h,s,v = self.get_masked_colors(img, HSV)
-        self.hist_h = np.histogram(h, bins=[180])
-        self.hist_s = np.histogram(s, bins=[255])
-        self.hist_v = np.histogram(v, bins=[255])
+        self.hist_h = np.histogram(h, bins=180)
+        self.hist_s = np.histogram(s, bins=255)
+        self.hist_v = np.histogram(v, bins=255)
 
         rospy.loginfo('time for hsv {}'.format(time.time() - t))
         t = time.time()
 
         l,a,b = self.get_masked_colors(img, LAB)
-        self.hist_l = np.histogram(l, bins=[255])
-        self.hist_a = np.histogram(a, bins=[255])
-        self.hist_b = np.histogram(b, bins=[255])
+        self.hist_l = np.histogram(l, bins=255)
+        self.hist_a = np.histogram(a, bins=255)
+        self.hist_b = np.histogram(b, bins=255)
 
         rospy.loginfo('time for lab {}'.format(time.time() - t))
 
@@ -378,23 +378,23 @@ class ColorCapture():
     def get_config(self, req):
 
         hst_msg_h = HistMsg()
-        hst_msg_h.bins = self.hist_h[0]
-        hst_msg_h.values = self.hist_h[1]
+        hst_msg_h.bins = self.hist_h[1]
+        hst_msg_h.values = self.hist_h[0]
         hst_msg_s = HistMsg()
-        hst_msg_s.bins = self.hist_s[0]
-        hst_msg_s.values = self.hist_s[1]
+        hst_msg_s.bins = self.hist_s[1]
+        hst_msg_s.values = self.hist_s[0]
         hst_msg_v = HistMsg()
-        hst_msg_v.bins = self.hist_v[0]
-        hst_msg_v.values = self.hist_v[1]
+        hst_msg_v.bins = self.hist_v[1]
+        hst_msg_v.values = self.hist_v[0]
         hst_msg_l = HistMsg()
-        hst_msg_l.bins = self.hist_l[0]
-        hst_msg_l.values = self.hist_l[1]
+        hst_msg_l.bins = self.hist_l[1]
+        hst_msg_l.values = self.hist_l[0]
         hst_msg_a = HistMsg()
-        hst_msg_a.bins = self.hist_a[0]
-        hst_msg_a.values = self.hist_a[1]
+        hst_msg_a.bins = self.hist_a[1]
+        hst_msg_a.values = self.hist_a[0]
         hst_msg_b = HistMsg()
-        hst_msg_b.bins = self.hist_b[0]
-        hst_msg_b.values = self.hist_b[1]
+        hst_msg_b.bins = self.hist_b[1]
+        hst_msg_b.values = self.hist_b[0]
 
         return GetConfigResponse((self.h_mean, self.h_sigma*self.sigma_multi_h*2),
                                  (self.s_mean, self.s_sigma*self.sigma_multi_s*2),
