@@ -85,9 +85,12 @@ class ColorCapture():
         self.h_arr = []
         self.s_arr = []
         self.v_arr = []
-        self.hist_h = []
-        self.hist_s = []
-        self.hist_v = []
+        self.hist_h = np.zeros([2,180])
+        self.hist_h[1] = np.arange(180)
+        self.hist_s = np.zeros([2,255])
+        self.hist_s[1] = np.arange(255)
+        self.hist_v = np.zeros([2,255])
+        self.hist_v[1] = np.arange(255)
 
         ## lab
         self.l_mean = 0
@@ -101,9 +104,12 @@ class ColorCapture():
         self.u_arr = []
         self.lv_arr = []
 
-        self.hist_l = []
-        self.hist_a = []
-        self.hist_b = []
+        self.hist_l = np.zeros([2,255])
+        self.hist_l[1] = np.arange(255)
+        self.hist_a = np.zeros([2,256])
+        self.hist_a[1] = np.arange(256)
+        self.hist_b = np.zeros([2,223])
+        self.hist_b[1] = np.arange(223)
 
 
 
@@ -218,17 +224,11 @@ class ColorCapture():
 
         t = time.time()
         h,s,v = self.get_masked_colors(img, HSV)
-        self.hist_h = np.histogram(h, bins=180)
-        self.hist_s = np.histogram(s, bins=255)
-        self.hist_v = np.histogram(v, bins=255)
 
         rospy.loginfo('time for hsv {}'.format(time.time() - t))
         t = time.time()
 
         l,a,b = self.get_masked_colors(img, LAB)
-        self.hist_l = np.histogram(l, bins=255)
-        self.hist_a = np.histogram(a, bins=255)
-        self.hist_b = np.histogram(b, bins=255)
 
         rospy.loginfo('time for lab {}'.format(time.time() - t))
 
@@ -236,10 +236,18 @@ class ColorCapture():
         res = self.np_hist(h,s,v, l, a, b)
 
         rospy.loginfo('time for np_hist {}'.format(time.time() - t))
+        self.accumulate_hists(h,s,v,l,a,b)
         if self.img_count > 0:
             self.average(res)
         else:
 
+            # self.hist_h[0],self.hist_h[1] = np.histogram(h, range=[0,180],bins=180)
+            # self.hist_s[0],self.hist_s[1] = np.histogram(s, range=[0,255],bins=255)
+            # self.hist_v[0],self.hist_v[1] = np.histogram(v, range=[0,255],bins=255)
+
+            # self.hist_l[0],self.hist_l[1] = np.histogram(l, range=[0,255],bins=255)
+            # self.hist_a[0],self.hist_a[1] = np.histogram(a, range=[0,255],bins=255)
+            # self.hist_b[0],self.hist_b[1]= np.histogram(b, range=[0,255],bins=255)
             self.h_mean,self.h_sigma  = res[0]
 
             self.s_mean, self.s_sigma = res[1]
@@ -298,6 +306,23 @@ class ColorCapture():
         res_s = std_old**2 + std_new**2 + mean_old + mean_new - 2*res_m
         res_s = math.sqrt(res_s/2)
         return res_m, res_s
+
+    def accumulate_hists(self, h,s,v,l,a,b):
+        hist_h = np.histogram(h, range=[0,180],bins=180)
+        hist_s = np.histogram(s, range=[0,255],bins=255)
+        hist_v = np.histogram(v, range=[0,255],bins=255)
+
+        hist_l = np.histogram(l, range=[0,255],bins=255)
+        hist_a = np.histogram(a, range=[0,256],bins=256)
+        hist_b = np.histogram(b, range=[0,223],bins=223)
+        self.hist_h[0] += hist_h[0]
+        self.hist_s[0] += hist_s[0]
+        self.hist_v[0] += hist_v[0]
+
+        self.hist_l[0] += hist_l[0]
+        self.hist_a[0] += hist_a[0]
+        self.hist_b[0] += hist_b[0]
+
 
     def clear_count(self,request):
         self.img_count = 0
