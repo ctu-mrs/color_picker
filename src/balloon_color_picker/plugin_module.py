@@ -602,12 +602,13 @@ class ColorPlugin(Plugin):
         name = name[len(name)-1].split('.')[0]
         #HSV
         hsv = {}
-        hsv['hist_bins_h'] = resp.hsv[0].bins
-        hsv['hist_hist_h'] = resp.hsv[0].values
-        hsv['hist_bins_s'] = resp.hsv[1].bins
-        hsv['hist_hist_s'] = resp.hsv[1].values
-        hsv['hist_bins_v'] = resp.hsv[2].bins
-        hsv['hist_hist_v'] = resp.hsv[2].values
+        # hsv['hist_bins_h'] = resp.hsv[0].bins
+        # hsv['hist_hist_h'] = resp.hsv[0].values
+        # hsv['hist_bins_s'] = resp.hsv[1].bins
+        # hsv['hist_hist_s'] = resp.hsv[1].values
+        # hsv['hist_bins_v'] = resp.hsv[2].bins
+        # hsv['hist_hist_v'] = resp.hsv[2].values
+        hsv['hsv_roi'] = resp.hsv_roi
         hsv['hue_center'] = resp.h[0]
         hsv['hue_range'] = resp.h[1]
         hsv['sat_center'] = resp.s[0]
@@ -623,12 +624,13 @@ class ColorPlugin(Plugin):
         lab['a_range'] = resp.a[1]
         lab['b_center'] = resp.b[0]
         lab['b_range'] = resp.b[1]
-        lab['hist_bins_l'] = resp.lab[0].bins
-        lab['hist_hist_l'] = resp.lab[0].values
-        lab['hist_bins_a'] = resp.lab[1].bins
-        lab['hist_hist_a'] = resp.lab[1].values
-        lab['hist_bins_b'] = resp.lab[2].bins
-        lab['hist_hist_b'] = resp.lab[2].values
+        # lab['hist_bins_l'] = resp.lab[0].bins
+        # lab['hist_hist_l'] = resp.lab[0].values
+        # lab['hist_bins_a'] = resp.lab[1].bins
+        # lab['hist_hist_a'] = resp.lab[1].values
+        # lab['hist_bins_b'] = resp.lab[2].bins
+        # lab['hist_hist_b'] = resp.lab[2].values
+        lab['lab_roi'] = resp.lab_roi
         conf_obj['lab'] = lab
 
         conf_obj['binarization_method'] = self.color_space

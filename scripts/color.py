@@ -85,6 +85,7 @@ class ColorCapture():
         self.h_arr = []
         self.s_arr = []
         self.v_arr = []
+        self.hsv_roi = []
         self.hist_h = np.zeros([2,180])
         self.hist_h[1] = np.arange(180)
         self.hist_s = np.zeros([2,255])
@@ -103,6 +104,7 @@ class ColorCapture():
         self.l_arr = []
         self.u_arr = []
         self.lv_arr = []
+        self.lab_roi = []
 
         self.hist_l = np.zeros([2,255])
         self.hist_l[1] = np.arange(255)
@@ -240,7 +242,6 @@ class ColorCapture():
         if self.img_count > 0:
             self.average(res)
         else:
-
             # self.hist_h[0],self.hist_h[1] = np.histogram(h, range=[0,180],bins=180)
             # self.hist_s[0],self.hist_s[1] = np.histogram(s, range=[0,255],bins=255)
             # self.hist_v[0],self.hist_v[1] = np.histogram(v, range=[0,255],bins=255)
@@ -383,6 +384,19 @@ class ColorCapture():
         hsv = cv2.cvtColor(img, color)
         masked = hsv[self.mask==1, :]
 
+        if color_space == HSV:
+            
+            if self.img_count > 0:
+                self.hsv_roi +=cv2.calcHist([hsv],[0, 1,2], self.mask, [180, 256,255], [0, 180, 0, 256,0,255] )
+            else:
+                rospy.loginfo('shape {}'.format(masked.shape))
+                self.hsv_roi = cv2.calcHist([hsv],[0, 1,2], self.mask, [180, 256,255], [0, 180, 0, 256,0,255] )
+        elif color_space == LAB:
+            if self.img_count > 0:
+                self.lab_roi += cv2.calcHist([hsv],[0, 1,2], self.mask, [225, 256,223], [0, 225, 0, 256,0,223])
+            else:
+                rospy.loginfo('shape {}'.format(hsv.shape))
+                self.lab_roi = cv2.calcHist([hsv],[0, 1,2], self.mask, [225, 256,223], [0, 225, 0, 256,0,223])
         a = masked[:, 0]
         b = masked[:, 1]
         c = masked[:, 2]
@@ -396,7 +410,7 @@ class ColorCapture():
         x,y = cv
         rows = img.shape[0]
         cols = img.shape[1]
-        zero = np.zeros((img.shape[0], img.shape[1]))
+        zero = np.zeros((img.shape[0], img.shape[1]),dtype="uint8")
 
         cv2.circle(zero, (x, y), r, 1, -1)
         self.mask = zero
@@ -427,8 +441,8 @@ class ColorCapture():
                                  (self.l_mean, self.l_sigma*self.sigma_multi_l*2),
                                  (self.a_mean, self.a_sigma*self.sigma_multi_a*2),
                                  (self.b_mean, self.b_sigma*self.sigma_multi_b*2),
-                                 [hst_msg_h,hst_msg_s,hst_msg_v],
-                                 [hst_msg_l,hst_msg_a,hst_msg_b],
+                                 self.hsv_roi,
+                                 self.lab_roi
                                  )
 
     def save_pic(self,req):
