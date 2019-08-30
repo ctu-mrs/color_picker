@@ -49,7 +49,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>HSV</string>
+    <string>HSV(0)</string>
    </property>
   </widget>
   <widget class="QPushButton" name="change_luv">
@@ -118,7 +118,7 @@
     </property>
 
     <property name="text">
-      <string>HSV(0)</string>
+      <string>HSV</string>
     </property>
     <property name="Alignment">
       <enum>Qt::AlignCenter</enum>

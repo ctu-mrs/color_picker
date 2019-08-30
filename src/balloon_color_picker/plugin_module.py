@@ -267,6 +267,8 @@ class ColorPlugin(Plugin):
 
 # #} end of __init__
 
+# #{ set_colorspaces
+
     def set_colorspace_hsv(self):
         self.color_space = 'HSV'
 
@@ -275,6 +277,9 @@ class ColorPlugin(Plugin):
 
 
 
+# #} end of set_colorspaces
+
+# #{ plot
 
     def plot(self, h,s,v,l,u,lv, means, sigmas):
         self.mean_h, self.mean_s, self.mean_v, self.mean_l, self.mean_u, self.mean_lv = means
@@ -386,6 +391,11 @@ class ColorPlugin(Plugin):
         self.canvas_luv.draw()
         self.plotted = True
 
+
+# #} end of plot
+
+# #{ update_plots
+
     def update_plots(self):
         ax = self.figure.get_axes()[0]
         sx = self.figure.get_axes()[1]
@@ -421,6 +431,11 @@ class ColorPlugin(Plugin):
         vx.axvline(self.mean_v-self.std_v*self.sigma_v,color='g', ymax=1)
 
         self.canvas.draw()
+
+
+# #} end of update_plots
+
+# #{ update_plots_lab
 
     def update_plots_lab(self):
         # refresh canvas
@@ -458,6 +473,10 @@ class ColorPlugin(Plugin):
 
 
 
+# #} end of update_plots_lab
+
+
+# #{ img_callback
 
     def img_callback(self,data):
         if self.view != RGB:
@@ -472,11 +491,19 @@ class ColorPlugin(Plugin):
         q = QPixmap.fromImage(q_img)
         self._widget.wdg_img.setPixmap(q)
 
+
+# #} end of img_callback
+
+# #{ clear
+
     def clear(self):
         self.figure.clf()
         self.clear_count()
         self._widget.image_count.setText('Samples taken: 0 ')
         print("cleared")
+
+
+# #} end of clear
 
     def filter_callback(self,data):
         if self.view != HSV:
