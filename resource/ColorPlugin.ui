@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Clear colors </string>
+    <string>Clear colors(N) </string>
    </property>
   </widget>
   <widget class="QPushButton" name="capture">
@@ -36,7 +36,7 @@
       </rect>
     </property>
     <property name="text">
-      <string>Capture Color</string>
+      <string>Capture(C)</string>
     </property>
   </widget>
   <widget class="QPushButton" name="change">
@@ -62,7 +62,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Lab</string>
+    <string>Lab(1)</string>
    </property>
   </widget>
   <widget class="QPushButton" name="change_both">
@@ -75,7 +75,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Compare</string>
+    <string>Compare(2)</string>
    </property>
   </widget>
   <widget class="QLabel" name="wdg_img">
@@ -118,7 +118,7 @@
     </property>
 
     <property name="text">
-      <string>HSV</string>
+      <string>HSV(0)</string>
     </property>
     <property name="Alignment">
       <enum>Qt::AlignCenter</enum>
@@ -473,7 +473,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Save</string>
+    <string>Save(S)</string>
    </property>
   </widget>
 

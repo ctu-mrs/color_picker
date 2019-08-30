@@ -1,4 +1,5 @@
 from __future__ import division
+# #{ imports
 import os
 import subprocess
 import rospy
@@ -35,11 +36,15 @@ from balloon_color_picker.srv import (
 from PIL import Image
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi, QtCore
-from python_qt_binding.QtWidgets import QWidget, QVBoxLayout, QPushButton, QGroupBox, QRadioButton,QHBoxLayout
-from python_qt_binding.QtGui import QPixmap, QImage
+from python_qt_binding.QtWidgets import QWidget, QVBoxLayout, QPushButton, QGroupBox, QRadioButton,QHBoxLayout, QShortcut
+from python_qt_binding.QtGui import QPixmap, QImage, QKeySequence
 from argparse import ArgumentParser
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image as RosImg
+
+
+
+# #} end of imports
 
 
 HSV = 0
@@ -48,6 +53,8 @@ RGB = 2
 BOTH = 3
 
 class ColorPlugin(Plugin):
+
+# #{ __init__
 
     def __init__(self, context):
         super(ColorPlugin, self).__init__(context)
@@ -222,6 +229,20 @@ class ColorPlugin(Plugin):
         # self._widget.wdg_img.setPixmap(q)
         # self._widget.box_layout.addWidget(self.toolbar)
         # self._widget.inner.box_layout.addWidget(self.canvas)
+        #shortcuts
+
+        self.short_capture = QShortcut(QKeySequence("C"), self._widget)
+        self.short_capture.activated.connect(self.capture)
+        self.short_hsv = QShortcut(QKeySequence("0"), self._widget)
+        self.short_hsv.activated.connect(self.switch_view_hsv)
+        self.short_lab = QShortcut(QKeySequence("1"), self._widget)
+        self.short_lab.activated.connect(self.switch_view_luv)
+        self.short_both = QShortcut(QKeySequence("2"), self._widget)
+        self.short_both.activated.connect(self.switch_view_both)
+        self.short_save = QShortcut(QKeySequence("S"), self._widget)
+        self.short_save.activated.connect(self.save_config)
+        self.short_clear = QShortcut(QKeySequence("N"), self._widget)
+        self.short_clear.activated.connect(self.clear)
 
         vbx = QVBoxLayout()
         but_hsv = QRadioButton()
@@ -238,9 +259,13 @@ class ColorPlugin(Plugin):
 
         self._widget.radio_buttons.setLayout(vbx)
 
+        # shortcuts
+
         self.plotted = False
 
 
+
+# #} end of __init__
 
     def set_colorspace_hsv(self):
         self.color_space = 'HSV'
