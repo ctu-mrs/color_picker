@@ -49,7 +49,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>HSV(0)</string>
+    <string>HSV(1)</string>
    </property>
   </widget>
   <widget class="QPushButton" name="change_luv">
@@ -62,7 +62,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Lab(1)</string>
+    <string>Lab(2)</string>
    </property>
   </widget>
   <widget class="QPushButton" name="change_both">
@@ -75,7 +75,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Compare(2)</string>
+    <string>Compare(3)</string>
    </property>
   </widget>
   <widget class="QLabel" name="wdg_img">
@@ -504,7 +504,7 @@
    </property>
 
    <property name="title">
-     <string>Colors</string>
+     <string>Colors (Ctrl+number_of_color)</string>
    </property>
 
   </widget>

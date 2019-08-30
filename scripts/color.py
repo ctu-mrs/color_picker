@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 from __future__ import division
+# #{ imports
+
 from cv_bridge import CvBridge
 from PIL import Image
 import rospy
@@ -43,6 +45,12 @@ from balloon_color_picker.srv import (
 from balloon_color_picker.msg import (
     HistMsg
 )
+from std_msgs.msg import (
+    Float64MultiArray,
+    MultiArrayLayout
+)
+
+# #} end of imports
 
 HSV = 0
 LAB = 1
@@ -417,32 +425,20 @@ class ColorCapture():
     def get_config(self, req):
 
         hst_msg_h = HistMsg()
-        hst_msg_h.bins = self.hist_h[1]
-        hst_msg_h.values = self.hist_h[0]
-        hst_msg_s = HistMsg()
-        hst_msg_s.bins = self.hist_s[1]
-        hst_msg_s.values = self.hist_s[0]
-        hst_msg_v = HistMsg()
-        hst_msg_v.bins = self.hist_v[1]
-        hst_msg_v.values = self.hist_v[0]
-        hst_msg_l = HistMsg()
-        hst_msg_l.bins = self.hist_l[1]
-        hst_msg_l.values = self.hist_l[0]
-        hst_msg_a = HistMsg()
-        hst_msg_a.bins = self.hist_a[1]
-        hst_msg_a.values = self.hist_a[0]
-        hst_msg_b = HistMsg()
-        hst_msg_b.bins = self.hist_b[1]
-        hst_msg_b.values = self.hist_b[0]
-
+        hst_msg_h.height = self.hsv_roi.shape[0]
+        hst_msg_h.width = self.hsv_roi.shape[1]
+        rospy.loginfo('shape {}'.format(self.hsv_roi.shape))
+        hst_msg_h.values = self.hsv_roi.flatten().tolist()
+        
+        np.savetxt('/home/mrs/git/testing_functions/balloon.txt', self.lab_roi.flatten())
+        # np.savetxt('/home/mrs/git/testing_functions/balloon.txt', self.hsv_roi)
+        
         return GetConfigResponse((self.h_mean, self.h_sigma*self.sigma_multi_h*2),
                                  (self.s_mean, self.s_sigma*self.sigma_multi_s*2),
                                  (self.v_mean, self.v_sigma*self.sigma_multi_v*2),
                                  (self.l_mean, self.l_sigma*self.sigma_multi_l*2),
                                  (self.a_mean, self.a_sigma*self.sigma_multi_a*2),
                                  (self.b_mean, self.b_sigma*self.sigma_multi_b*2),
-                                 self.hsv_roi,
-                                 self.lab_roi
                                  )
 
     def save_pic(self,req):

@@ -233,11 +233,11 @@ class ColorPlugin(Plugin):
 
         self.short_capture = QShortcut(QKeySequence("C"), self._widget)
         self.short_capture.activated.connect(self.capture)
-        self.short_hsv = QShortcut(QKeySequence("0"), self._widget)
+        self.short_hsv = QShortcut(QKeySequence("1"), self._widget)
         self.short_hsv.activated.connect(self.switch_view_hsv)
-        self.short_lab = QShortcut(QKeySequence("1"), self._widget)
+        self.short_lab = QShortcut(QKeySequence("2"), self._widget)
         self.short_lab.activated.connect(self.switch_view_luv)
-        self.short_both = QShortcut(QKeySequence("2"), self._widget)
+        self.short_both = QShortcut(QKeySequence("3"), self._widget)
         self.short_both.activated.connect(self.switch_view_both)
         self.short_save = QShortcut(QKeySequence("S"), self._widget)
         self.short_save.activated.connect(self.save_config)
@@ -475,7 +475,6 @@ class ColorPlugin(Plugin):
 
 # #} end of update_plots_lab
 
-
 # #{ img_callback
 
     def img_callback(self,data):
@@ -505,6 +504,8 @@ class ColorPlugin(Plugin):
 
 # #} end of clear
 
+# #{ filter callback
+
     def filter_callback(self,data):
         if self.view != HSV:
             return
@@ -516,6 +517,10 @@ class ColorPlugin(Plugin):
 
         q = QPixmap.fromImage(q_img)
         self._widget.wdg_img.setPixmap(q)
+
+# #} end of filter callback
+
+# #{ luv_callback
 
     def luv_callback(self,data):
         if self.view != LUV:
@@ -529,6 +534,11 @@ class ColorPlugin(Plugin):
 
         q = QPixmap.fromImage(q_img)
         self._widget.wdg_img.setPixmap(q)
+
+
+# #} end of luv_callback
+
+# #{ both_callback
 
     def both_callback(self,luv,hsv):
         if self.view != BOTH:
@@ -555,7 +565,9 @@ class ColorPlugin(Plugin):
 
 
 
+# #} end of both_callback
 
+# #{ slider_event_hsv
 
     def slider_event(self):
 
@@ -572,6 +584,10 @@ class ColorPlugin(Plugin):
         self._widget.sigma_value_v.setText('Sigma V value: {}'.format(self.sigma_v))
 
 
+# #} end of slider_event_hsv
+
+# #{ slider_event_lab
+
     def slider_event_lab(self):
 
         self.sigma_l = float(self._widget.sigma_slider_lab.value())/2
@@ -586,6 +602,9 @@ class ColorPlugin(Plugin):
 
 
 
+# #} end of slider_event_lab
+
+# #{ capture
 
     def capture(self):
 
@@ -598,6 +617,9 @@ class ColorPlugin(Plugin):
         return
 
 
+# #} end of capture
+
+# #{ switch_view_hsv
 
     def switch_view_hsv(self):
         print("HSV")
@@ -606,12 +628,22 @@ class ColorPlugin(Plugin):
             return
         self.view = HSV
 
+
+# #} end of switch_view_hsv
+
+# #{ switch_view_luv
+
     def switch_view_luv(self):
         print("LUV")
         if self.view == LUV:
             self.view = RGB
             return
         self.view = LUV
+
+
+# #} end of switch_view_luv
+
+# #{ swithc_view_both
 
     def switch_view_both(self):
         print("BOTH")
@@ -624,11 +656,21 @@ class ColorPlugin(Plugin):
         self._widget.label_hsv.show()
         self._widget.label_lab.show()
 
+
+# #} end of swithc_view_both
+
+# #{ load_config
+
     def load_config(self, path):
         f = file(path,'r')
         print(path)
         res = yaml.safe_load(f)
         return res['colors']
+
+
+# #} end of load_config
+
+# #{ clicked
 
     def clicked(self, color):
 
@@ -636,15 +678,31 @@ class ColorPlugin(Plugin):
             self._widget.directory.setText(self.save_path+'/{}.yaml'.format(color))
         return clicker
 
+
+# #} end of clicked
+
+# #{ add_buttons
+
     def add_buttons(self, colors):
         vbx = QVBoxLayout()
+        i = 1
         for color in colors:
 
-            but = QPushButton('Color {}'.format(color))
+            but = QPushButton('Color {} ({})'.format(color, i))
             but.clicked.connect(self.clicked(color))
+
+            but_short = QShortcut(QKeySequence("Ctrl+"+str(i)), self._widget)
+            but_short.activated.connect(self.clicked(color))
+            i+=1
             vbx.addWidget(but)
+
         vbx.addStretch(1)
         self._widget.color_buttons.setLayout(vbx)
+
+
+# #} end of add_buttons
+
+# #{ save_config
 
     def save_config(self):
         resp  = self.get_config()
@@ -660,7 +718,7 @@ class ColorPlugin(Plugin):
         # hsv['hist_hist_s'] = resp.hsv[1].values
         # hsv['hist_bins_v'] = resp.hsv[2].bins
         # hsv['hist_hist_v'] = resp.hsv[2].values
-        hsv['hsv_roi'] = resp.hsv_roi
+        # hsv['hsv_roi'] = resp.hsv_roi
         hsv['hue_center'] = resp.h[0]
         hsv['hue_range'] = resp.h[1]
         hsv['sat_center'] = resp.s[0]
@@ -682,7 +740,7 @@ class ColorPlugin(Plugin):
         # lab['hist_hist_a'] = resp.lab[1].values
         # lab['hist_bins_b'] = resp.lab[2].bins
         # lab['hist_hist_b'] = resp.lab[2].values
-        lab['lab_roi'] = resp.lab_roi
+        # lab['lab_roi'] = resp.lab_roi
         conf_obj['lab'] = lab
 
         conf_obj['binarization_method'] = self.color_space
@@ -699,6 +757,11 @@ class ColorPlugin(Plugin):
             print(save_dir)
             print(subprocess.check_call([path_to_script,os.environ['UAV_NAME'], save_dir, name+'.yaml']))
 
+
+# #} end of save_config
+
+# #{ set_params
+
     def set_params(self):
 
         resp = self.get_params()
@@ -706,6 +769,9 @@ class ColorPlugin(Plugin):
         print('params loaded')
         return resp.config_path, resp.save_path, resp.circled,resp.circle_filter, resp.circle_luv, resp.save_to_drone
 
+# #} end of set_params
+
+# #{ default todo's
 
     def shutdown_plugin(self):
         # TODO unregister all publishers here
@@ -725,3 +791,6 @@ class ColorPlugin(Plugin):
     # Comment in to signal that the plugin has a way to configure
     # This will enable a setting button (gear icon) in each dock widget title bar
     # Usually used to open a modal configuration dialog
+
+
+# #} end of default todo's
