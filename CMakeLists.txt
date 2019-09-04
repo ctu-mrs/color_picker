@@ -62,6 +62,7 @@ add_service_files(
   Save.srv
   GetConfig.srv
   Pic.srv
+  Freeze.srv
   Params.srv
 
   # Service1.srv

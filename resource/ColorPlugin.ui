@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QPushButton" name="clear">
+  <widget class="QPushButton" name="clear_button">
    <property name="geometry">
     <rect>
      <x>30</x>
@@ -26,7 +26,7 @@
     <string>Clear colors(N) </string>
    </property>
   </widget>
-  <widget class="QPushButton" name="capture">
+  <widget class="QPushButton" name="capture_button">
     <property name="geometry">
       <rect>
         <x>150</x>
@@ -76,6 +76,19 @@
    </property>
    <property name="text">
     <string>Compare(3)</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="freeze_button">
+   <property name="geometry">
+    <rect>
+     <x>480</x>
+     <y>750</y>
+     <width>98</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Freeze(F)</string>
    </property>
   </widget>
   <widget class="QLabel" name="wdg_img">
@@ -463,7 +476,7 @@
         </property>
       </widget>
 
-  <widget class="QPushButton" name="save_config">
+  <widget class="QPushButton" name="save_button">
    <property name="geometry">
     <rect>
      <x>1120</x>

@@ -34,13 +34,11 @@ from balloon_color_picker.srv import (
     Freeze,
     FreezeResponse,
 )
-from balloon_color_picker import MyWidget 
-
 from PIL import Image
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi, QtCore
 from python_qt_binding.QtWidgets import QWidget, QVBoxLayout, QPushButton, QGroupBox, QRadioButton,QHBoxLayout, QShortcut
-from python_qt_binding.QtGui import QPixmap, QImage, QKeySequence, QMouseEvent
+from python_qt_binding.QtGui import QPixmap, QImage, QKeySequence, QMouseEvent, QCursor
 from argparse import ArgumentParser
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image as RosImg
@@ -49,80 +47,61 @@ from sensor_msgs.msg import Image as RosImg
 
 # #} end of imports
 
-
 HSV = 0
 LUV = 1
 RGB = 2
 BOTH = 3
 
-class ColorPlugin(Plugin):
 
-# #{ __init__
+class MyWidget(QWidget):        
+# #{ init
 
-    def __init__(self, context):
-        super(ColorPlugin, self).__init__(context)
+    def __init__(self):
+        super(MyWidget, self).__init__()            
+        # loadUi('/home/mrs/workspace/src/ros_packages/balloon_color_picker/resource/ColorPlugin.ui',self)
+        # self.initUI()
+        # rospy.loginfo('log')
+        self.brd = CvBridge()
+        self.view = RGB
+        ui_file = os.path.join(rospkg.RosPack().get_path('balloon_color_picker'), 'resource', 'ColorPlugin.ui')
+        rospy.loginfo('uifile {}'.format(ui_file))
+        loadUi(ui_file, self)
+        # self.setStyleSheet("background-color:blue;")
         # Give QObjects reasonable names
-        self.setObjectName('ColorPlugin')
-        rospy.sleep(1)
-        print(context)
-        # Process standalone plugin command-line arguments
-        parser = ArgumentParser()
-        # Add argument(s) to the parser.
-        parser.add_argument("-q", "--quiet", action="store_true",
-                            dest="quiet",
-                            help="Put plugin in silent mode")
-        args, unknowns = parser.parse_known_args(context.argv())
-        if not args.quiet:
-            print 'arguments: ', args
-            print 'unknowns: ', unknowns
+        self.setObjectName('ColorPluginUi')
 
-        # self._widget = MyWidget.MyWidget()
-        # self.brd = CvBridge()
-        # self.view = RGB
-        # ui_file = os.path.join(rospkg.RosPack().get_path('balloon_color_picker'), 'resource', 'ColorPlugin.ui')
-        # rospy.loginfo('uifile {}'.format(ui_file))
-        # loadUi(ui_file, self._widget)
-        # # self._widget.setStyleSheet("background-color:blue;")
-        # # Give QObjects reasonable names
-        # self._widget.setObjectName('ColorPluginUi')
+        # print(rospy.get_param('gui_name'))
+        # ROS services
 
-        # # print(rospy.get_param('gui_name'))
-        # # ROS services
-
-        # self.sigma_caller = rospy.ServiceProxy('change_sigma', ChangeSigma)
-        # self.sigma_lab_caller = rospy.ServiceProxy('change_sigma_lab', ChangeSigmaLab)
-        # self.caller = rospy.ServiceProxy('capture', Capture)
-        # self.get_count = rospy.ServiceProxy('get_count', GetCount)
-        # self.clear_count = rospy.ServiceProxy('clear_count', ClearCount)
-        # self.get_config = rospy.ServiceProxy('get_config', GetConfig)
-        # self.get_params = rospy.ServiceProxy('get_params', Params)
-        # self.freeze_service = rospy.ServiceProxy('freeze', Freeze)
+        self.sigma_caller = rospy.ServiceProxy('change_sigma', ChangeSigma)
+        self.sigma_lab_caller = rospy.ServiceProxy('change_sigma_lab', ChangeSigmaLab)
+        self.caller = rospy.ServiceProxy('capture', Capture)
+        self.get_count = rospy.ServiceProxy('get_count', GetCount)
+        self.clear_count = rospy.ServiceProxy('clear_count', ClearCount)
+        self.get_config = rospy.ServiceProxy('get_config', GetConfig)
+        self.get_params = rospy.ServiceProxy('get_params', Params)
+        self.freeze_service = rospy.ServiceProxy('freeze', Freeze)
 
 
-        # rospy.wait_for_service('capture')
-        # rospy.wait_for_service('get_params')
+        rospy.wait_for_service('capture')
+        rospy.wait_for_service('get_params')
 
-        # self.config_path, self.save_path, self.circled_param, self.circle_filter_param, self.circle_luv_param, self.save_to_drone = self.set_params()
-        # # SUBS
-
-
-        # self.balloon_sub = rospy.Subscriber(self.circled_param, RosImg, self.img_callback, queue_size = 1)
-        # self.filter_sub  = rospy.Subscriber(self.circle_filter_param, RosImg, self.filter_callback, queue_size = 1)
-        # self.filter_luv  = rospy.Subscriber(self.circle_luv_param, RosImg, self.luv_callback, queue_size = 1)
-        # self.hsv = message_filters.Subscriber(self.circle_filter_param, RosImg)
-        # self.luv = message_filters.Subscriber(self.circle_luv_param, RosImg)
-
-        # self.ts = message_filters.ApproximateTimeSynchronizer([self.luv,  self.hsv], 1, 0.5)
-        # self.ts.registerCallback(self.both_callback)
-
-        # self.colors = self.load_config(self.config_path)
-        # self.add_buttons(self.colors)
-        new_wdg = MyWidget.MyWidget()
-        context.add_widget(new_wdg)
+        self.config_path, self.save_path, self.circled_param, self.circle_filter_param, self.circle_luv_param, self.save_to_drone = self.set_params()
+        # SUBS
 
 
-        if context.serial_number() > 1:
-            self._widget.setWindowTitle(self._widget.windowTitle() + (' (%d)' % context.serial_number()))
+        self.balloon_sub = rospy.Subscriber(self.circled_param, RosImg, self.img_callback, queue_size = 1)
+        self.filter_sub  = rospy.Subscriber(self.circle_filter_param, RosImg, self.filter_callback, queue_size = 1)
+        self.filter_luv  = rospy.Subscriber(self.circle_luv_param, RosImg, self.luv_callback, queue_size = 1)
+        self.hsv = message_filters.Subscriber(self.circle_filter_param, RosImg)
+        self.luv = message_filters.Subscriber(self.circle_luv_param, RosImg)
+
+        self.ts = message_filters.ApproximateTimeSynchronizer([self.luv,  self.hsv], 1, 0.5)
+        self.ts.registerCallback(self.both_callback)
+
+        self.colors = self.load_config(self.config_path)
+        self.add_buttons(self.colors)
+
 
 
 
@@ -140,140 +119,161 @@ class ColorPlugin(Plugin):
 
         #DIRECTORY
         #default
-        #self._widget.directory.setText(self.save_path)
-        #self._widget.save_config.clicked.connect(self.save_config)
+        self.directory.setText(self.save_path)
+        self.save_button.clicked.connect(self.save_config)
 
 
-        ##PLOT
+        #PLOT
 
-        #self.figure = Figure()
-        #self.figure_luv = Figure()
-        #self.canvas = FigureCanvas(self.figure)
-        #self.canvas_luv = FigureCanvas(self.figure_luv)
-        #self.canvas.setParent(self._widget.inner)
-        ## self.toolbar = NavigationToolbar(self.canvas,self._widget)
-        ## self.toolbar_luv = NavigationToolbar(self.canvas_luv,self._widget)
-        ## self.toolbar.setParent(self._widget.inner)
-        ## self.toolbar_luv.setParent(self._widget.inner_luv)
-        #self.canvas_luv.setParent(self._widget.inner_luv)
+        self.figure = Figure()
+        self.figure_luv = Figure()
+        self.canvas = FigureCanvas(self.figure)
+        self.canvas_luv = FigureCanvas(self.figure_luv)
+        self.canvas.setParent(self.inner)
+        # self.toolbar = NavigationToolbar(self.canvas,self)
+        # self.toolbar_luv = NavigationToolbar(self.canvas_luv,self)
+        # self.toolbar.setParent(self.inner)
+        # self.toolbar_luv.setParent(self.inner_luv)
+        self.canvas_luv.setParent(self.inner_luv)
 
-        ##SLIDER CONFIG
-        #self._widget.sigma_slider.setRange(0,100)
-        #self._widget.sigma_slider.setSingleStep(1)
-        #self._widget.sigma_slider.setValue(6)
-
-
-        #self._widget.sigma_slider.valueChanged.connect(self.slider_event)
+        #SLIDER CONFIG
+        self.sigma_slider.setRange(0,100)
+        self.sigma_slider.setSingleStep(1)
+        self.sigma_slider.setValue(6)
 
 
-
-        #self._widget.sigma_slider_s.setRange(0,100)
-        #self._widget.sigma_slider_s.setSingleStep(1)
-        #self._widget.sigma_slider_s.setValue(6)
-
-
-        #self._widget.sigma_slider_s.valueChanged.connect(self.slider_event)
-
-        #self._widget.sigma_slider_v.setRange(0,100)
-        #self._widget.sigma_slider_v.setSingleStep(1)
-        #self._widget.sigma_slider_v.setValue(6)
-
-
-        #self._widget.sigma_slider_v.valueChanged.connect(self.slider_event)
-
-        #self._widget.sigma_slider_lab.setRange(0,100)
-        #self._widget.sigma_slider_lab.setSingleStep(1)
-        #self._widget.sigma_slider_lab.setValue(6)
-
-
-        #self._widget.sigma_slider_lab.valueChanged.connect(self.slider_event_lab)
-
-        #self._widget.sigma_slider_a.setRange(0,100)
-        #self._widget.sigma_slider_a.setSingleStep(1)
-        #self._widget.sigma_slider_a.setValue(6)
-
-
-        #self._widget.sigma_slider_a.valueChanged.connect(self.slider_event_lab)
-
-
-        #self._widget.sigma_slider_b.setRange(0,100)
-        #self._widget.sigma_slider_b.setSingleStep(1)
-        #self._widget.sigma_slider_b.setValue(6)
-
-
-        #self._widget.sigma_slider_b.valueChanged.connect(self.slider_event_lab)
+        self.sigma_slider.valueChanged.connect(self.slider_event)
 
 
 
-        ##SIGMA TEXT
-        #font = self._widget.font()
-        #font.setPointSize(16)
-        #self._widget.sigma_value.setFont(font)
-        #self._widget.sigma_value_s.setFont(font)
-        #self._widget.sigma_value_v.setFont(font)
-        #self._widget.sigma_value_lab.setFont(font)
-        #self._widget.sigma_value_a.setFont(font)
-        #self._widget.sigma_value_b.setFont(font)
-        ##IMAGE COUNT TEXT
-        #self._widget.image_count.setFont(font)
-        ##BOX FOR BUTTONS font
-        ## self._widget.color_buttons.setFont(font)
+        self.sigma_slider_s.setRange(0,100)
+        self.sigma_slider_s.setSingleStep(1)
+        self.sigma_slider_s.setValue(6)
 
-        ##LAB HSV TEXT
-        #font.setPointSize(23)
-        #self._widget.label_lab.setFont(font)
-        #self._widget.label_lab.hide()
-        #self._widget.label_hsv.setFont(font)
-        #self._widget.label_hsv.hide()
 
-        ## BUTTONS
-        #self._widget.change.clicked.connect(self.switch_view_hsv)
-        #self._widget.change_both.clicked.connect(self.switch_view_both)
-        #self._widget.change_luv.clicked.connect(self.switch_view_luv)
-        #self._widget.capture.clicked.connect(self.capture)
-        #self._widget.clear.clicked.connect(self.clear)
-        #self._widget.freeze.clicked.connect(self.freeze)
-        ## self._widget.wdg_img.setPixmap(q)
-        ## self._widget.box_layout.addWidget(self.toolbar)
-        ## self._widget.inner.box_layout.addWidget(self.canvas)
-        ##shortcuts
+        self.sigma_slider_s.valueChanged.connect(self.slider_event)
 
-        #self.short_capture = QShortcut(QKeySequence("C"), self._widget)
-        #self.short_capture.activated.connect(self.capture)
-        #self.short_hsv = QShortcut(QKeySequence("1"), self._widget)
-        #self.short_hsv.activated.connect(self.switch_view_hsv)
-        #self.short_lab = QShortcut(QKeySequence("2"), self._widget)
-        #self.short_lab.activated.connect(self.switch_view_luv)
-        #self.short_both = QShortcut(QKeySequence("3"), self._widget)
-        #self.short_both.activated.connect(self.switch_view_both)
-        #self.short_save = QShortcut(QKeySequence("S"), self._widget)
-        #self.short_save.activated.connect(self.save_config)
-        #self.short_clear = QShortcut(QKeySequence("N"), self._widget)
-        #self.short_clear.activated.connect(self.clear)
-        #self.short_freeze = QShortcut(QKeySequence("F"), self._widget)
-        #self.short_freeze.activated.connect(self.freeze)
+        self.sigma_slider_v.setRange(0,100)
+        self.sigma_slider_v.setSingleStep(1)
+        self.sigma_slider_v.setValue(6)
 
-        #vbx = QVBoxLayout()
-        #but_hsv = QRadioButton()
-        #but_hsv.setText('HSV')
-        #but_hsv.setChecked(True)
-        #self.color_space = 'HSV'
-        #but_hsv.clicked.connect(self.set_colorspace_hsv)
-        #vbx.addWidget(but_hsv)
-        #but_lab = QRadioButton()
-        #but_lab.setText('LAB')
-        #but_lab.clicked.connect(self.set_colorspace_lab)
-        #vbx.addWidget(but_lab)
-        #vbx.addStretch(1)
 
-        #self._widget.radio_buttons.setLayout(vbx)
+        self.sigma_slider_v.valueChanged.connect(self.slider_event)
 
-        ## self._widget.mousePressEvent.connect(self.mousePressEvent)
-        #self.plotted = False
+        self.sigma_slider_lab.setRange(0,100)
+        self.sigma_slider_lab.setSingleStep(1)
+        self.sigma_slider_lab.setValue(6)
+
+
+        self.sigma_slider_lab.valueChanged.connect(self.slider_event_lab)
+
+        self.sigma_slider_a.setRange(0,100)
+        self.sigma_slider_a.setSingleStep(1)
+        self.sigma_slider_a.setValue(6)
+
+
+        self.sigma_slider_a.valueChanged.connect(self.slider_event_lab)
+
+
+        self.sigma_slider_b.setRange(0,100)
+        self.sigma_slider_b.setSingleStep(1)
+        self.sigma_slider_b.setValue(6)
+
+
+        self.sigma_slider_b.valueChanged.connect(self.slider_event_lab)
 
 
 
-# #} end of __init__
+        #SIGMA TEXT
+        font = self.font()
+        font.setPointSize(16)
+        self.sigma_value.setFont(font)
+        self.sigma_value_s.setFont(font)
+        self.sigma_value_v.setFont(font)
+        self.sigma_value_lab.setFont(font)
+        self.sigma_value_a.setFont(font)
+        self.sigma_value_b.setFont(font)
+        #IMAGE COUNT TEXT
+        self.image_count.setFont(font)
+        #BOX FOR BUTTONS font
+        # self.color_buttons.setFont(font)
+
+        #LAB HSV TEXT
+        font.setPointSize(23)
+        self.label_lab.setFont(font)
+        self.label_lab.hide()
+        self.label_hsv.setFont(font)
+        self.label_hsv.hide()
+
+        # BUTTONS
+        self.change.clicked.connect(self.switch_view_hsv)
+        self.change_both.clicked.connect(self.switch_view_both)
+        self.change_luv.clicked.connect(self.switch_view_luv)
+        self.capture_button.clicked.connect(self.capture)
+        self.clear_button.clicked.connect(self.clear)
+        self.freeze_button.clicked.connect(self.freeze)
+        # self.wdg_img.setPixmap(q)
+        # self.box_layout.addWidget(self.toolbar)
+        # self.inner.box_layout.addWidget(self.canvas)
+        #shortcuts
+
+        self.short_capture = QShortcut(QKeySequence("C"), self)
+        self.short_capture.activated.connect(self.capture)
+        self.short_hsv = QShortcut(QKeySequence("1"), self)
+        self.short_hsv.activated.connect(self.switch_view_hsv)
+        self.short_lab = QShortcut(QKeySequence("2"), self)
+        self.short_lab.activated.connect(self.switch_view_luv)
+        self.short_both = QShortcut(QKeySequence("3"), self)
+        self.short_both.activated.connect(self.switch_view_both)
+        self.short_save = QShortcut(QKeySequence("S"), self)
+        self.short_save.activated.connect(self.save_config)
+        self.short_clear = QShortcut(QKeySequence("N"), self)
+        self.short_clear.activated.connect(self.clear)
+        self.short_freeze = QShortcut(QKeySequence("F"), self)
+        self.short_freeze.activated.connect(self.freeze)
+
+        vbx = QVBoxLayout()
+        but_hsv = QRadioButton()
+        but_hsv.setText('HSV')
+        but_hsv.setChecked(True)
+        self.color_space = 'HSV'
+        but_hsv.clicked.connect(self.set_colorspace_hsv)
+        vbx.addWidget(but_hsv)
+        but_lab = QRadioButton()
+        but_lab.setText('LAB')
+        but_lab.clicked.connect(self.set_colorspace_lab)
+        vbx.addWidget(but_lab)
+        vbx.addStretch(1)
+
+        self.radio_buttons.setLayout(vbx)
+
+        # self.mousePressEvent.connect(self.mousePressEvent)
+        self.plotted = False
+
+
+
+# #} end of init
+
+# #{ mouse events
+
+
+    def mousePressEvent(self, QMouseEvent):
+        cursor =QCursor()
+        x = QMouseEvent.x()
+        y = QMouseEvent.y()
+        if x < 1280 and y < 720:
+            print "inside"
+         
+
+    def mouseReleaseEvent(self, QMouseEvent):
+        cursor =QCursor()
+        x = QMouseEvent.x()
+        y = QMouseEvent.y()
+        if x < 1280 and y < 720:
+            print "inside"
+
+
+# #} end of mouse events
 
 # #{ set_colorspaces
 
@@ -304,7 +304,7 @@ class ColorPlugin(Plugin):
         y = norm.pdf(x,self.mean_h,self.std_h)
         ax.plot(x, y)
         #thresholds
-        val = float(self._widget.sigma_slider.value())/2
+        val = float(self.sigma_slider.value())/2
 
         ax.axvline(self.mean_h+self.std_h*val,color='r')
         ax.axvline(self.mean_h-self.std_h*val,color='g')
@@ -320,7 +320,7 @@ class ColorPlugin(Plugin):
         sx.plot(x, y)
 
         #thresholds
-        val = float(self._widget.sigma_slider_s.value())/2
+        val = float(self.sigma_slider_s.value())/2
 
         sx.axvline(self.mean_s+self.std_s*val,color='r')
         sx.axvline(self.mean_s-self.std_s*val,color='g')
@@ -337,7 +337,7 @@ class ColorPlugin(Plugin):
         vx.plot(x, y)
 
         #thresholds
-        val = float(self._widget.sigma_slider_v.value())/2
+        val = float(self.sigma_slider_v.value())/2
 
         vx.axvline(self.mean_v+self.std_v*val,color='r',ymax=1)
         vx.axvline(self.mean_v-self.std_v*val,color='g',ymax=1)
@@ -356,7 +356,7 @@ class ColorPlugin(Plugin):
         y = norm.pdf(x,self.mean_l,self.std_l)
         ax.plot(x, y)
         #thresholds
-        val = float(self._widget.sigma_slider_lab.value())/2
+        val = float(self.sigma_slider_lab.value())/2
 
         ax.axvline(self.mean_l+self.std_l*val,color='r')
         ax.axvline(self.mean_l-self.std_l*val,color='g')
@@ -372,7 +372,7 @@ class ColorPlugin(Plugin):
         y = norm.pdf(x,self.mean_u,self.std_u)
         sx.plot(x, y)
         #thresholds
-        val = float(self._widget.sigma_slider_a.value())/2
+        val = float(self.sigma_slider_a.value())/2
 
         sx.axvline(self.mean_u+self.std_u*val,color='r')
         sx.axvline(self.mean_u-self.std_u*val,color='g')
@@ -389,7 +389,7 @@ class ColorPlugin(Plugin):
         vx.plot(x, y)
 
         #thresholds
-        val = float(self._widget.sigma_slider_b.value())/2
+        val = float(self.sigma_slider_b.value())/2
 
         vx.axvline(self.mean_lv+self.std_lv*val,color='r')
         vx.axvline(self.mean_lv-self.std_lv*val,color='g')
@@ -496,7 +496,7 @@ class ColorPlugin(Plugin):
 
 
         q = QPixmap.fromImage(q_img)
-        self._widget.wdg_img.setPixmap(q)
+        self.wdg_img.setPixmap(q)
 
 
 # #} end of img_callback
@@ -506,7 +506,7 @@ class ColorPlugin(Plugin):
     def clear(self):
         self.figure.clf()
         self.clear_count()
-        self._widget.image_count.setText('Samples taken: 0 ')
+        self.image_count.setText('Samples taken: 0 ')
         print("cleared")
 
 
@@ -524,7 +524,7 @@ class ColorPlugin(Plugin):
         q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
 
         q = QPixmap.fromImage(q_img)
-        self._widget.wdg_img.setPixmap(q)
+        self.wdg_img.setPixmap(q)
 
 # #} end of filter callback
 
@@ -541,7 +541,7 @@ class ColorPlugin(Plugin):
 
 
         q = QPixmap.fromImage(q_img)
-        self._widget.wdg_img.setPixmap(q)
+        self.wdg_img.setPixmap(q)
 
 
 # #} end of luv_callback
@@ -550,8 +550,8 @@ class ColorPlugin(Plugin):
 
     def both_callback(self,luv,hsv):
         if self.view != BOTH:
-            self._widget.label_hsv.hide()
-            self._widget.label_lab.hide()
+            self.label_hsv.hide()
+            self.label_lab.hide()
             return
         img_luv = self.brd.imgmsg_to_cv2(luv)
         img_hsv = self.brd.imgmsg_to_cv2(hsv)
@@ -569,7 +569,7 @@ class ColorPlugin(Plugin):
 
 
         q = QPixmap.fromImage(q_img)
-        self._widget.wdg_img.setPixmap(q)
+        self.wdg_img.setPixmap(q)
 
 
 
@@ -579,17 +579,17 @@ class ColorPlugin(Plugin):
 
     def slider_event(self):
 
-        self.sigma_h = float(self._widget.sigma_slider.value())/2
-        self.sigma_s = float(self._widget.sigma_slider_s.value())/2
-        self.sigma_v = float(self._widget.sigma_slider_v.value())/2
+        self.sigma_h = float(self.sigma_slider.value())/2
+        self.sigma_s = float(self.sigma_slider_s.value())/2
+        self.sigma_v = float(self.sigma_slider_v.value())/2
         res = self.sigma_caller(self.sigma_h, self.sigma_s, self.sigma_v)
 
         self.update_plots()
 
 
-        self._widget.sigma_value.setText('Sigma H value: {}'.format(self.sigma_h))
-        self._widget.sigma_value_s.setText('Sigma S value: {}'.format(self.sigma_s))
-        self._widget.sigma_value_v.setText('Sigma V value: {}'.format(self.sigma_v))
+        self.sigma_value.setText('Sigma H value: {}'.format(self.sigma_h))
+        self.sigma_value_s.setText('Sigma S value: {}'.format(self.sigma_s))
+        self.sigma_value_v.setText('Sigma V value: {}'.format(self.sigma_v))
 
 
 # #} end of slider_event_hsv
@@ -598,15 +598,15 @@ class ColorPlugin(Plugin):
 
     def slider_event_lab(self):
 
-        self.sigma_l = float(self._widget.sigma_slider_lab.value())/2
-        self.sigma_a = float(self._widget.sigma_slider_a.value())/2
-        self.sigma_b = float(self._widget.sigma_slider_b.value())/2
+        self.sigma_l = float(self.sigma_slider_lab.value())/2
+        self.sigma_a = float(self.sigma_slider_a.value())/2
+        self.sigma_b = float(self.sigma_slider_b.value())/2
         self.update_plots_lab()
         # rospy.loginfo('value {}'.format(self.sigma_l))
         self.sigma_lab_caller(self.sigma_l, self.sigma_a, self.sigma_b)
-        self._widget.sigma_value_lab.setText('Sigma L value: {}'.format(self.sigma_l))
-        self._widget.sigma_value_a.setText('Sigma A value: {}'.format(self.sigma_a))
-        self._widget.sigma_value_b.setText('Sigma B value: {}'.format(self.sigma_b))
+        self.sigma_value_lab.setText('Sigma L value: {}'.format(self.sigma_l))
+        self.sigma_value_a.setText('Sigma A value: {}'.format(self.sigma_a))
+        self.sigma_value_b.setText('Sigma B value: {}'.format(self.sigma_b))
 
 
 
@@ -621,7 +621,7 @@ class ColorPlugin(Plugin):
         res= self.caller()
         # rospy.loginfo('response {}'.format(res))
         self.plot(res.h, res.s,res.v,res.l,res.u,res.lv, res.means, res.sigmas)
-        self._widget.image_count.setText('Samples taken: {} '.format(res.count))
+        self.image_count.setText('Samples taken: {} '.format(res.count))
         return
 
 
@@ -661,8 +661,8 @@ class ColorPlugin(Plugin):
             return
         self.view = BOTH
 
-        self._widget.label_hsv.show()
-        self._widget.label_lab.show()
+        self.label_hsv.show()
+        self.label_lab.show()
 
 
 # #} end of swithc_view_both
@@ -683,7 +683,7 @@ class ColorPlugin(Plugin):
     def clicked(self, color):
 
         def clicker():
-            self._widget.directory.setText(self.save_path+'/{}.yaml'.format(color))
+            self.directory.setText(self.save_path+'/{}.yaml'.format(color))
         return clicker
 
 
@@ -699,13 +699,13 @@ class ColorPlugin(Plugin):
             but = QPushButton('Color {} ({})'.format(color, i))
             but.clicked.connect(self.clicked(color))
 
-            but_short = QShortcut(QKeySequence("Ctrl+"+str(i)), self._widget)
+            but_short = QShortcut(QKeySequence("Ctrl+"+str(i)), self)
             but_short.activated.connect(self.clicked(color))
             i+=1
             vbx.addWidget(but)
 
         vbx.addStretch(1)
-        self._widget.color_buttons.setLayout(vbx)
+        self.color_buttons.setLayout(vbx)
 
 
 # #} end of add_buttons
@@ -725,7 +725,7 @@ class ColorPlugin(Plugin):
     def save_config(self):
         resp  = self.get_config()
         conf_obj = {}
-        save_dir = self._widget.directory.text()
+        save_dir = self.directory.text()
         name = save_dir.split('/')
         name = name[len(name)-1].split('.')[0]
         #HSV
@@ -788,8 +788,6 @@ class ColorPlugin(Plugin):
         return resp.config_path, resp.save_path, resp.circled,resp.circle_filter, resp.circle_luv, resp.save_to_drone
 
 # #} end of set_params
-    def mousePressEvent(self, QMouseEvent):
-        print('pos {}'.format(QMouseEvent.pos()))
 
 # #{ default todo's
 

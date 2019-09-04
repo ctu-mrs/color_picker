@@ -40,7 +40,9 @@ from balloon_color_picker.srv import (
     Pic,
     PicResponse,
     Params,
-    ParamsResponse
+    ParamsResponse,
+    Freeze,
+    FreezeResponse
 )
 from balloon_color_picker.msg import (
     HistMsg
@@ -71,7 +73,8 @@ class ColorCapture():
         self.save_to_drone= rospy.get_param('~save_to_drone')
 
 
-        self.cur_img = np.zeros([720,1280])
+        self.cur_img = np.zeros([720,1280,3])
+        self.circle_img = np.zeros([720,1280,3])
 
         self.services_ready = False
         self.sigma_multi_h = 3
@@ -120,6 +123,7 @@ class ColorCapture():
         self.hist_a[1] = np.arange(256)
         self.hist_b = np.zeros([2,223])
         self.hist_b[1] = np.arange(223)
+        self.freeze = False
 
 
 
@@ -138,25 +142,28 @@ class ColorCapture():
             self.get_service  = rospy.Service('get_count', GetCount, self.get_count)
             self.config_service  = rospy.Service('get_config', GetConfig, self.get_config)
             self.pic_service  = rospy.Service('get_pic', Pic, self.save_pic)
+            self.freeze_service  = rospy.Service('freeze', Freeze, self.freeze_callback)
             self.params_service  = rospy.Service('get_params', Params, self.get_params)
             self.prepare_mask(img)
             rospy.loginfo('Services started')
             self.services_ready = True
-        self.cur_img = img.copy()
-        img.setflags(write=1)
-        x, y, c =img.shape
+        x, y, c = img.shape
         cv  = (y//2, x//2)
         r = x//3
-        cv2.circle(img, cv,r, 20 ,thickness=7, lineType=8, shift=0)
+        if not self.freeze:
+            self.cur_img = img.copy()
+            self.circle_img = img.copy()
+            self.pub_img = img.copy
+        cv2.circle(self.circle_img, cv,r, 20 ,thickness=7, lineType=8, shift=0)
         # imgmsg = self.bridge.cv2_to_imgmsg(img, 'rgb8')
-        imgmsg = self.bridge.cv2_to_imgmsg(img)
+        imgmsg = self.bridge.cv2_to_imgmsg(self.circle_img)
         imgmsg.encoding = "bgr8"
         self.circle_pub.publish(imgmsg)
 
 
     def balloon_filter(self,data):
 
-        img = self.bridge.imgmsg_to_cv2(data, "bgr8")
+        img = np.array(self.cur_img.copy(), dtype=np.uint8)
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
         lower = np.array([self.h_mean-self.h_sigma*self.sigma_multi_h,self.s_mean-self.s_sigma*self.sigma_multi_s,self.v_mean-self.v_sigma*self.sigma_multi_v])
@@ -208,7 +215,8 @@ class ColorCapture():
         self.circle_hsv.publish(msg)
 
     def balloon_filter_lab(self,data):
-        img = self.bridge.imgmsg_to_cv2(data, "bgr8")
+        # img = self.bridge.imgmsg_to_cv2(data, "bgr8")
+        img = np.array(self.cur_img.copy(), dtype=np.uint8)
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
 
         lower = np.array([self.l_mean-self.l_sigma*self.sigma_multi_l,self.a_mean-self.a_sigma*self.sigma_multi_a,self.b_mean-self.b_sigma*self.sigma_multi_b])
@@ -445,6 +453,14 @@ class ColorCapture():
         rospy.loginfo('cur_img {}'.format(self.cur_img))
         rospy.loginfo('ing {}'.format(cv2.imwrite('/home/mrs/last_img.png',self.cur_img)))
         return PicResponse()
+
+    def freeze_callback(self,req):
+        if self.freeze:
+            self.freeze = False
+        else:
+            self.freeze = True
+        return FreezeResponse()
+
 
     def get_params(self, req):
 
