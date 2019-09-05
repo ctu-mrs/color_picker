@@ -1,0 +1,14 @@
+int64 x1
+int64 y1
+int64 x2
+int64 y2
+---
+float64[] h
+float64[] s
+float64[] v
+float64[] means
+float64[] sigmas
+float64[] l
+float64[] u
+float64[] lv
+int8 count

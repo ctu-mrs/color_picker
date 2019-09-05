@@ -81,7 +81,7 @@
   <widget class="QPushButton" name="freeze_button">
    <property name="geometry">
     <rect>
-     <x>480</x>
+     <x>590</x>
      <y>750</y>
      <width>98</width>
      <height>27</height>
@@ -460,7 +460,7 @@
   <widget class="QLabel" name="image_count">
         <property name="geometry">
           <rect>
-            <x>600</x>
+            <x>655</x>
             <y>749</y>
             <width>200</width>
             <height>30</height>
@@ -468,7 +468,7 @@
         </property>
 
         <property name="text">
-          <string>Samples taken: 0 </string>
+          <string>Samples: 0 </string>
         </property>
 
         <property name="Alignment">
@@ -479,7 +479,7 @@
   <widget class="QPushButton" name="save_button">
    <property name="geometry">
     <rect>
-     <x>1120</x>
+     <x>1170</x>
      <y>750</y>
      <width>115</width>
      <height>27</height>
@@ -493,7 +493,7 @@
   <widget class="QLineEdit" name="directory">
    <property name="geometry">
     <rect>
-     <x>800</x>
+     <x>850</x>
      <y>750</y>
      <width>300</width>
      <height>27</height>

@@ -55,6 +55,7 @@ add_message_files(
 add_service_files(
   FILES
   Capture.srv
+  CaptureCropped.srv
   ChangeSigma.srv
   ChangeSigmaLab.srv
   ClearCount.srv

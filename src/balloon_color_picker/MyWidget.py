@@ -19,6 +19,8 @@ from matplotlib.figure import Figure
 from balloon_color_picker.srv import (
     Capture,
     CaptureResponse,
+    CaptureCropped,
+    CaptureCroppedResponse,
     ChangeSigma,
     ChangeSigmaResponse,
     ClearCount,
@@ -37,8 +39,26 @@ from balloon_color_picker.srv import (
 from PIL import Image
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi, QtCore
-from python_qt_binding.QtWidgets import QWidget, QVBoxLayout, QPushButton, QGroupBox, QRadioButton,QHBoxLayout, QShortcut
-from python_qt_binding.QtGui import QPixmap, QImage, QKeySequence, QMouseEvent, QCursor
+from python_qt_binding.QtCore import (
+    QRect
+)
+from python_qt_binding.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QPushButton, 
+    QGroupBox,
+    QRadioButton,
+    QHBoxLayout, 
+    QShortcut,
+    QRubberBand
+)
+from python_qt_binding.QtGui import (
+    QPixmap,
+    QImage,
+    QKeySequence,
+    QMouseEvent,
+    QCursor
+)
 from argparse import ArgumentParser
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image as RosImg
@@ -76,6 +96,7 @@ class MyWidget(QWidget):
         self.sigma_caller = rospy.ServiceProxy('change_sigma', ChangeSigma)
         self.sigma_lab_caller = rospy.ServiceProxy('change_sigma_lab', ChangeSigmaLab)
         self.caller = rospy.ServiceProxy('capture', Capture)
+        self.capture_cropped_srv = rospy.ServiceProxy('capture_cropped', CaptureCropped)
         self.get_count = rospy.ServiceProxy('get_count', GetCount)
         self.clear_count = rospy.ServiceProxy('clear_count', ClearCount)
         self.get_config = rospy.ServiceProxy('get_config', GetConfig)
@@ -250,7 +271,9 @@ class MyWidget(QWidget):
         # self.mousePressEvent.connect(self.mousePressEvent)
         self.plotted = False
 
+        self._rubber = None
 
+        self.frozen = False
 
 # #} end of init
 
@@ -262,16 +285,59 @@ class MyWidget(QWidget):
         x = QMouseEvent.x()
         y = QMouseEvent.y()
         if x < 1280 and y < 720:
-            print "inside"
-         
+            if self._rubber == None:
+                if  not self.frozen:
+                    self.freeze()
+                    self.frozen_before = False
+                else:
+                    self.frozen_before = True
+                self.rub_origin = QMouseEvent.pos()
+                self._rubber = QRubberBand(QRubberBand.Rectangle, self)
+                self._rubber.show()
+    
+    def mouseMoveEvent(self, QMouseEvent): 
+
+        cursor =QCursor()
+        x = QMouseEvent.x()
+        y = QMouseEvent.y()
+        if x < 1280 and y < 720:
+            self._rubber.setGeometry(QRect(self.rub_origin, QMouseEvent.pos()).normalized())
 
     def mouseReleaseEvent(self, QMouseEvent):
         cursor =QCursor()
         x = QMouseEvent.x()
         y = QMouseEvent.y()
         if x < 1280 and y < 720:
-            print "inside"
+            if not self.frozen_before:
+                self.freeze()
 
+            a = self.mapToGlobal(self.rub_origin)
+            b = QMouseEvent.globalPos()
+            a = self.wdg_img.mapFromGlobal(a)
+            b = self.wdg_img.mapFromGlobal(b)
+
+            self._rubber.hide()
+            self._rubber = None
+
+            pix = QPixmap(self.wdg_img.pixmap())
+            sx = float(self.wdg_img.rect().width())
+            sy = float(self.wdg_img.rect().height())
+            
+            sx = pix.width() / sx
+            sy = pix.height() / sy
+
+            a.setX(int(a.x()*sx))
+            a.setY(int(a.y()*sy))
+
+            b.setX(int(b.x()*sx))
+            b.setY(int(b.y()*sy))
+            rect_ = QRect(a,b)
+
+            h_ = rect_.height()
+            w_ = rect_.width()
+
+            y1,x1,y2,x2 = rect_.getCoords()
+            self.capture_cropped(x1,y1,x2,y2)
 
 # #} end of mouse events
 
@@ -483,7 +549,7 @@ class MyWidget(QWidget):
 
 # #} end of update_plots_lab
 
-# #{ img_callback
+# #{ img_callba
 
     def img_callback(self,data):
         if self.view != RGB:
@@ -506,7 +572,7 @@ class MyWidget(QWidget):
     def clear(self):
         self.figure.clf()
         self.clear_count()
-        self.image_count.setText('Samples taken: 0 ')
+        self.image_count.setText('Samples: 0 ')
         print("cleared")
 
 
@@ -627,6 +693,19 @@ class MyWidget(QWidget):
 
 # #} end of capture
 
+# #{ capture_cropped
+
+    def capture_cropped(self, x1,y1,x2,y2):
+
+        res=  self.capture_cropped_srv(x1,y1,x2,y2)
+        # rospy.loginfo('response {}'.format(res))
+        self.plot(res.h, res.s,res.v,res.l,res.u,res.lv, res.means, res.sigmas)
+        self.image_count.setText('Samples: {} '.format(res.count))
+
+
+
+# #} end of capture_cropped
+
 # #{ switch_view_hsv
 
     def switch_view_hsv(self):
@@ -714,6 +793,10 @@ class MyWidget(QWidget):
 
     def freeze(self):
         self.freeze_service.call()
+        if self.frozen:
+            self.frozen = False
+        else:
+            self.frozen = True
         return 
 
 
