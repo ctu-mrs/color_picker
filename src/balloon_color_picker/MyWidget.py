@@ -59,6 +59,7 @@ from python_qt_binding.QtGui import (
     QMouseEvent,
     QCursor
 )
+from std_msgs.msg import String
 from argparse import ArgumentParser
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image as RosImg
@@ -73,25 +74,22 @@ RGB = 2
 BOTH = 3
 
 
-class MyWidget(QWidget):        
+class MyWidget(QWidget):
 # #{ init
 
     def __init__(self):
-        super(MyWidget, self).__init__()            
-        # loadUi('/home/mrs/workspace/src/ros_packages/balloon_color_picker/resource/ColorPlugin.ui',self)
-        # self.initUI()
-        # rospy.loginfo('log')
+        super(MyWidget, self).__init__()
         self.brd = CvBridge()
         self.view = RGB
         ui_file = os.path.join(rospkg.RosPack().get_path('balloon_color_picker'), 'resource', 'ColorPlugin.ui')
         rospy.loginfo('uifile {}'.format(ui_file))
         loadUi(ui_file, self)
-        # self.setStyleSheet("background-color:blue;")
         # Give QObjects reasonable names
         self.setObjectName('ColorPluginUi')
 
-        # print(rospy.get_param('gui_name'))
         # ROS services
+
+# #{ ros services
 
         self.sigma_caller = rospy.ServiceProxy('change_sigma', ChangeSigma)
         self.sigma_lab_caller = rospy.ServiceProxy('change_sigma_lab', ChangeSigmaLab)
@@ -104,11 +102,15 @@ class MyWidget(QWidget):
         self.freeze_service = rospy.ServiceProxy('freeze', Freeze)
 
 
-        rospy.wait_for_service('capture')
+
+
+# #} end of ros services        rospy.wait_for_service('capture')
+
         rospy.wait_for_service('get_params')
 
         self.config_path, self.save_path, self.circled_param, self.circle_filter_param, self.circle_luv_param, self.save_to_drone = self.set_params()
         # SUBS
+# #{ ros subs
 
 
         self.balloon_sub = rospy.Subscriber(self.circled_param, RosImg, self.img_callback, queue_size = 1)
@@ -119,6 +121,9 @@ class MyWidget(QWidget):
 
         self.ts = message_filters.ApproximateTimeSynchronizer([self.luv,  self.hsv], 1, 0.5)
         self.ts.registerCallback(self.both_callback)
+
+
+# #} end of ros subs
 
         self.colors = self.load_config(self.config_path)
         self.add_buttons(self.colors)
@@ -158,6 +163,9 @@ class MyWidget(QWidget):
         self.canvas_luv.setParent(self.inner_luv)
 
         #SLIDER CONFIG
+
+        # #{ slider config
+        
         self.sigma_slider.setRange(0,100)
         self.sigma_slider.setSingleStep(1)
         self.sigma_slider.setValue(6)
@@ -204,6 +212,11 @@ class MyWidget(QWidget):
         self.sigma_slider_b.valueChanged.connect(self.slider_event_lab)
 
 
+        
+        # #} end of slider config
+
+# #{ font configs
+
 
         #SIGMA TEXT
         font = self.font()
@@ -225,6 +238,9 @@ class MyWidget(QWidget):
         self.label_lab.hide()
         self.label_hsv.setFont(font)
         self.label_hsv.hide()
+
+
+# #} end of font configs
 
         # BUTTONS
         self.change.clicked.connect(self.switch_view_hsv)
@@ -549,7 +565,7 @@ class MyWidget(QWidget):
 
 # #} end of update_plots_lab
 
-# #{ img_callba
+# #{ img_callback
 
     def img_callback(self,data):
         if self.view != RGB:
@@ -797,7 +813,7 @@ class MyWidget(QWidget):
             self.frozen = False
         else:
             self.frozen = True
-        return 
+        return
 
 
 
@@ -806,57 +822,60 @@ class MyWidget(QWidget):
 # #{ save_config
 
     def save_config(self):
-        resp  = self.get_config()
-        conf_obj = {}
-        save_dir = self.directory.text()
-        name = save_dir.split('/')
-        name = name[len(name)-1].split('.')[0]
-        #HSV
-        hsv = {}
-        # hsv['hist_bins_h'] = resp.hsv[0].bins
-        # hsv['hist_hist_h'] = resp.hsv[0].values
-        # hsv['hist_bins_s'] = resp.hsv[1].bins
-        # hsv['hist_hist_s'] = resp.hsv[1].values
-        # hsv['hist_bins_v'] = resp.hsv[2].bins
-        # hsv['hist_hist_v'] = resp.hsv[2].values
-        # hsv['hsv_roi'] = resp.hsv_roi
-        hsv['hue_center'] = resp.h[0]
-        hsv['hue_range'] = resp.h[1]
-        hsv['sat_center'] = resp.s[0]
-        hsv['sat_range'] = resp.s[1]
-        hsv['val_center'] = resp.v[0]
-        hsv['val_range'] = resp.v[1]
-        conf_obj['hsv'] = hsv
-        #LAB
-        lab = {}
-        lab['l_center'] = resp.l[0]
-        lab['l_range'] = resp.l[1]
-        lab['a_center'] = resp.a[0]
-        lab['a_range'] = resp.a[1]
-        lab['b_center'] = resp.b[0]
-        lab['b_range'] = resp.b[1]
-        # lab['hist_bins_l'] = resp.lab[0].bins
-        # lab['hist_hist_l'] = resp.lab[0].values
-        # lab['hist_bins_a'] = resp.lab[1].bins
-        # lab['hist_hist_a'] = resp.lab[1].values
-        # lab['hist_bins_b'] = resp.lab[2].bins
-        # lab['hist_hist_b'] = resp.lab[2].values
-        # lab['lab_roi'] = resp.lab_roi
-        conf_obj['lab'] = lab
+        color = String()
+        color.data = self.color_space
+        save_dir = String()
+        save_dir.data = self.directory.text()
+        resp  = self.get_config(color, save_dir)
+        #conf_obj = {}
+        #name = save_dir.split('/')
+        #name = name[len(name)-1].split('.')[0]
+        ##HSV
+        #hsv = {}
+        ## hsv['hist_bins_h'] = resp.hsv[0].bins
+        ## hsv['hist_hist_h'] = resp.hsv[0].values
+        ## hsv['hist_bins_s'] = resp.hsv[1].bins
+        ## hsv['hist_hist_s'] = resp.hsv[1].values
+        ## hsv['hist_bins_v'] = resp.hsv[2].bins
+        ## hsv['hist_hist_v'] = resp.hsv[2].values
+        ## hsv['hsv_roi'] = resp.hsv_roi
+        #hsv['hue_center'] = resp.h[0]
+        #hsv['hue_range'] = resp.h[1]
+        #hsv['sat_center'] = resp.s[0]
+        #hsv['sat_range'] = resp.s[1]
+        #hsv['val_center'] = resp.v[0]
+        #hsv['val_range'] = resp.v[1]
+        #conf_obj['hsv'] = hsv
+        ##LAB
+        #lab = {}
+        #lab['l_center'] = resp.l[0]
+        #lab['l_range'] = resp.l[1]
+        #lab['a_center'] = resp.a[0]
+        #lab['a_range'] = resp.a[1]
+        #lab['b_center'] = resp.b[0]
+        #lab['b_range'] = resp.b[1]
+        ## lab['hist_bins_l'] = resp.lab[0].bins
+        ## lab['hist_hist_l'] = resp.lab[0].values
+        ## lab['hist_bins_a'] = resp.lab[1].bins
+        ## lab['hist_hist_a'] = resp.lab[1].values
+        ## lab['hist_bins_b'] = resp.lab[2].bins
+        ## lab['hist_hist_b'] = resp.lab[2].values
+        ## lab['lab_roi'] = resp.lab_roi
+        #conf_obj['lab'] = lab
 
-        conf_obj['binarization_method'] = self.color_space
-        if os.path.isdir(save_dir):
-            return
-        f = file(save_dir,'w')
-        print('saved to dir {}'.format(save_dir))
-        yaml.safe_dump(conf_obj,f)
+        #conf_obj['binarization_method'] = self.color_space
+        #if os.path.isdir(save_dir):
+        #    return
+        #f = file(save_dir,'w')
+        #print('saved to dir {}'.format(save_dir))
+        #yaml.safe_dump(conf_obj,f)
 
-        if self.save_to_drone:
-            path_to_script = os.path.join(rospkg.RosPack().get_path('balloon_color_picker'), 'scripts', 'copy_to_uav.sh')
-            print(path_to_script)
-            print('exectuted command ')
-            print(save_dir)
-            print(subprocess.check_call([path_to_script,os.environ['UAV_NAME'], save_dir, name+'.yaml']))
+        #if self.save_to_drone:
+        #    path_to_script = os.path.join(rospkg.RosPack().get_path('balloon_color_picker'), 'scripts', 'copy_to_uav.sh')
+        #    print(path_to_script)
+        #    print('exectuted command ')
+        #    print(save_dir)
+        #    print(subprocess.check_call([path_to_script,os.environ['UAV_NAME'], save_dir, name+'.yaml']))
 
 
 # #} end of save_config
@@ -895,3 +914,4 @@ class MyWidget(QWidget):
 
 
 # #} end of default todo's
+

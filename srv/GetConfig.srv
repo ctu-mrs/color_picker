@@ -1,4 +1,4 @@
-bool color
+std_msgs/String color_space
 ---
 float64[] h
 float64[] s

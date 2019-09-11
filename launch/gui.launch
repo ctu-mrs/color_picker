@@ -2,29 +2,25 @@
 
   <arg name="uav_name" default="$(optenv UAV_NAME uav)"/>
 
+  <node name="repub" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/color/image_raw out:=/$(arg uav_name)/compressed"/>
 
-    <arg name="gui" default="true" />
-    <node name="repub" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/color/image_raw out:=/$(arg uav_name)/compressed"/>
+  <node name="balloon_color_picker" pkg="balloon_color_picker" type="color.py" output="screen">
 
-    <node name="balloon_color_picker" pkg="balloon_color_picker" type="color.py" output="screen">
+    <!-- Subscribed topics -->
+    <remap from="image_topic" to="/$(arg uav_name)/compressed" />
+    <!-- Published topics -->
+    <remap from="circle_topic" to="~circled" />
+    <remap from="circle_hsv" to="~circled_hsv" />
+    <remap from="circle_lab" to="~circled_lab" />
+    <!-- Params -->
+    <param name='save_dir' value='/tmp'/>
+    <param name='save_to_drone' value='false'/>
+    <param name='config_path' value='$(find balloon_color_picker)/config/balloon_config.yaml'/>
 
+  </node>
+  <!-- Gui Node -->
+  <node name="balloon_color_picker_gui" pkg="balloon_color_picker" type="plugin.py" output="screen">
+  </node>
 
-      <!-- Subscribed topics -->
-      <remap from="image_topic" to="/$(arg uav_name)/compressed" />
-      <!-- Published topics -->
-      <remap from="circle_topic" to="~circled" />
-      <remap from="circle_hsv" to="~circled_hsv" />
-      <remap from="circle_lab" to="~circled_lab" />
-      <!-- Params -->
-      <param name='save_dir' value='/tmp'/>
-      <param name='save_to_drone' value='false'/>
-      <param name='config_path' value='$(find balloon_color_picker)/config/balloon_config.yaml'/>
-
-
-    </node>
-    <!-- Gui Node -->
-    <node name="balloon_color_picker_gui" pkg="balloon_color_picker" type="plugin.py" output="screen">
-    </node>
-    
 
 </launch>

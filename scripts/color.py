@@ -7,6 +7,9 @@ from PIL import Image
 import rospy
 import copy
 import time
+import binascii
+import yaml
+from io import BytesIO
 import numpy as np
 from math import hypot
 import math
@@ -60,6 +63,7 @@ HSV = 0
 LAB = 1
 
 class ColorCapture():
+
 # #{ __init__
 
     def __init__(self):
@@ -129,6 +133,7 @@ class ColorCapture():
         self.hist_b = np.zeros([2,223])
         self.hist_b[1] = np.arange(223)
         self.freeze = False
+        self.color_space = 'HSV'
 
 
 
@@ -514,16 +519,16 @@ class ColorCapture():
         if color_space == HSV:
             
             if self.img_count > 0:
-                self.hsv_roi +=cv2.calcHist([hsv],[0, 1,2], self.mask, [180, 256,255], [0, 180, 0, 256,0,255] )
+                self.hsv_roi +=cv2.calcHist(images=[hsv],channels=[0, 1,2], mask=self.mask, histSize=[180, 256,255], ranges=[0, 180, 0, 256,0,255] )
             else:
                 rospy.loginfo('shape {}'.format(masked.shape))
-                self.hsv_roi = cv2.calcHist([hsv],[0, 1,2], self.mask, [180, 256,255], [0, 180, 0, 256,0,255] )
+                self.hsv_roi = cv2.calcHist(images=[hsv],channels=[0, 1,2], mask=self.mask, histSize=[180, 256,255], ranges=[0, 180, 0, 256,0,255] )
         elif color_space == LAB:
             if self.img_count > 0:
-                self.lab_roi += cv2.calcHist([hsv],[0, 1,2], self.mask, [225, 256,223], [0, 225, 0, 256,0,223])
+                self.lab_roi += cv2.calcHist(images=[hsv],channels=[0, 1,2], mask=self.mask, histSize=[225, 256,223], ranges=[0, 225, 0, 256,0,223])
             else:
                 rospy.loginfo('shape {}'.format(hsv.shape))
-                self.lab_roi = cv2.calcHist([hsv],[0, 1,2], self.mask, [225, 256,223], [0, 225, 0, 256,0,223])
+                self.lab_roi = cv2.calcHist(images=[hsv],channels=[0, 1,2], mask=self.mask, histSize=[225, 256,223], ranges=[0, 225, 0, 256,0,223])
         a = masked[:, 0]
         b = masked[:, 1]
         c = masked[:, 2]
@@ -576,14 +581,34 @@ class ColorCapture():
 
     def get_config(self, req):
 
-        hst_msg_h = HistMsg()
-        hst_msg_h.height = self.hsv_roi.shape[0]
-        hst_msg_h.width = self.hsv_roi.shape[1]
-        rospy.loginfo('shape {}'.format(self.hsv_roi.shape))
-        hst_msg_h.values = self.hsv_roi.flatten().tolist()
+        conf_obj = {}
+        #HSV
+        hsv = {}
+        hsv['hue_center'] = self.h_mean
+        hsv['hue_range'] = self.h_sigma*self.sigma_multi_h*2
+        hsv['sat_center'] = self.s_mean
+        hsv['sat_range'] = self.s_sigma*self.sigma_multi_s*2
+        hsv['val_center'] = self.v_mean
+        hsv['val_range'] = self.v_sigma*self.sigma_multi_v*2
+        conf_obj['hsv'] = hsv
+        #LAB
+        lab = {}
+        lab['l_center'] = self.l_mean
+        lab['l_range'] = self.l_sigma*self.sigma_multi_l*2
+        lab['a_center'] = self.a_mean 
+        lab['a_range'] = self.a_sigma*self.sigma_multi_a*2
+        lab['b_center'] = self.b_mean
+        lab['b_range'] = self.b_sigma*self.sigma_multi_b*2
+        conf_obj['lab'] = lab
+
+        conf_obj['binarization_method'] = req.color_space.data
+
+
+        f = file(req.save_dir.data,'w')
+        rospy.loginfo('saved to dir {}'.format(req.save_dir.data))
+
+        yaml.safe_dump(conf_obj,f)
         
-        # np.savetxt('/home/mrs/git/testing_functions/balloon.txt', self.lab_roi.flatten())
-        # np.savetxt('/home/mrs/git/testing_functions/balloon.txt', self.hsv_roi)
         
         return GetConfigResponse((self.h_mean, self.h_sigma*self.sigma_multi_h*2),
                                  (self.s_mean, self.s_sigma*self.sigma_multi_s*2),
@@ -601,6 +626,18 @@ class ColorCapture():
     def save_pic(self,req):
         rospy.loginfo('cur_img {}'.format(self.cur_img))
         rospy.loginfo('ing {}'.format(cv2.imwrite('/home/mrs/last_img.png',self.cur_img)))
+        msg = HistMsg()
+        msg.x, msg.y, msg.z = self.hsv_roi.shape
+        msg.values = self.hsv_roi.flatten()
+
+        buf_msg = BytesIO()
+        buf_msg.seek(0)
+
+        msg.serialize(buf_msg)
+        f = open('/home/mrs/msg.bin', 'wb')
+        f.write(buf_msg.getvalue())
+        f.flush()
+
         return PicResponse()
 
 

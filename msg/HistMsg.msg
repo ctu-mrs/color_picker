@@ -1,3 +1,4 @@
 float64[] values
-int64 height
-int64 width
+int64 x
+int64 y
+int64 z

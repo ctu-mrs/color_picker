@@ -10,6 +10,7 @@ project(balloon_color_picker)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   message_generation
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -81,7 +82,7 @@ add_service_files(
 generate_messages(
   DEPENDENCIES
   balloon_color_picker
-  # std_msgs  # Or other packages containing msgs
+  std_msgs  # Or other packages containing msgs
 )
 
 ################################################
