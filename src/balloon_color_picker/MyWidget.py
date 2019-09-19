@@ -828,8 +828,6 @@ class MyWidget(QWidget):
         save_dir.data = self.directory.text()
         resp  = self.get_config(color, save_dir)
         #conf_obj = {}
-        #name = save_dir.split('/')
-        #name = name[len(name)-1].split('.')[0]
         ##HSV
         #hsv = {}
         ## hsv['hist_bins_h'] = resp.hsv[0].bins

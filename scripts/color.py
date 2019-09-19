@@ -6,6 +6,7 @@ from cv_bridge import CvBridge
 from PIL import Image
 import rospy
 import copy
+import os
 import time
 import binascii
 import yaml
@@ -603,12 +604,11 @@ class ColorCapture():
 
         conf_obj['binarization_method'] = req.color_space.data
 
-
-        f = file(req.save_dir.data,'w')
-        rospy.loginfo('saved to dir {}'.format(req.save_dir.data))
-
-        yaml.safe_dump(conf_obj,f)
-        
+        if  os.path.isdir(req.name.data) is not True:
+            f = file(req.name.data,'w')
+            yaml.safe_dump(conf_obj,f)
+            
+            rospy.loginfo('saved to dir {}'.format(req.name.data))
         
         return GetConfigResponse((self.h_mean, self.h_sigma*self.sigma_multi_h*2),
                                  (self.s_mean, self.s_sigma*self.sigma_multi_s*2),
