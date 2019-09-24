@@ -585,21 +585,21 @@ class ColorCapture():
         conf_obj = {}
         #HSV
         hsv = {}
-        hsv['hue_center'] = self.h_mean
-        hsv['hue_range'] = self.h_sigma*self.sigma_multi_h*2
-        hsv['sat_center'] = self.s_mean
-        hsv['sat_range'] = self.s_sigma*self.sigma_multi_s*2
-        hsv['val_center'] = self.v_mean
-        hsv['val_range'] = self.v_sigma*self.sigma_multi_v*2
+        hsv['hue_center'] = float(self.h_mean)
+        hsv['hue_range'] = float(self.h_sigma*self.sigma_multi_h*2)
+        hsv['sat_center'] = float(self.s_mean)
+        hsv['sat_range'] = float(self.s_sigma*self.sigma_multi_s*2)
+        hsv['val_center'] = float(self.v_mean)
+        hsv['val_range'] = float(self.v_sigma*self.sigma_multi_v*2)
         conf_obj['hsv'] = hsv
         #LAB
         lab = {}
-        lab['l_center'] = self.l_mean
-        lab['l_range'] = self.l_sigma*self.sigma_multi_l*2
-        lab['a_center'] = self.a_mean 
-        lab['a_range'] = self.a_sigma*self.sigma_multi_a*2
-        lab['b_center'] = self.b_mean
-        lab['b_range'] = self.b_sigma*self.sigma_multi_b*2
+        lab['l_center'] = float(self.l_mean)
+        lab['l_range'] = float(self.l_sigma*self.sigma_multi_l*2)
+        lab['a_center'] = float(self.a_mean )
+        lab['a_range'] = float(self.a_sigma*self.sigma_multi_a*2)
+        lab['b_center'] = float(self.b_mean)
+        lab['b_range'] = float(self.b_sigma*self.sigma_multi_b*2)
         conf_obj['lab'] = lab
 
         conf_obj['binarization_method'] = req.color_space.data
