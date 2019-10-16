@@ -80,6 +80,9 @@ class ColorCapture():
         self.save_dir = rospy.get_param('~save_dir')
         self.config_path= rospy.get_param('~config_path')
         self.save_to_drone= rospy.get_param('~save_to_drone')
+        self.circled_name = rospy.get_param('~circled')
+        self.circled_hsv_name = rospy.get_param('~circled_hsv')
+        self.circled_lab_name = rospy.get_param('~circled_lab')
 
 
         self.cur_img = None
@@ -605,7 +608,7 @@ class ColorCapture():
         conf_obj['binarization_method'] = req.color_space.data
 
         if  os.path.isdir(req.name.data) is not True:
-            f = file(req.name.data,'w')
+            f = file(req.name.data,'rw')
             yaml.safe_dump(conf_obj,f)
             
             rospy.loginfo('saved to dir {}'.format(req.name.data))
@@ -659,7 +662,7 @@ class ColorCapture():
 
     def get_params(self, req):
 
-        return ParamsResponse(self.config_path, self.save_dir, self.circle_pub.name, self.circle_hsv.name, self.circle_lab.name,self.save_to_drone)
+        return ParamsResponse(self.config_path, self.save_dir, self.circled_name, self.circled_hsv_name, self.circled_lab_name,self.save_to_drone)
 
 
 # #} end of get_params_for_visualization
