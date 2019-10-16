@@ -86,6 +86,7 @@ class MyWidget(QWidget):
         loadUi(ui_file, self)
         # Give QObjects reasonable names
         self.setObjectName('ColorPluginUi')
+        self.uav_name = os.environ['UAV_NAME']
 
         # ROS services
 
@@ -106,6 +107,8 @@ class MyWidget(QWidget):
 
 # #} end of ros services        rospy.wait_for_service('capture')
 
+        rospy.loginfo('waiting for service')
+        rospy.loginfo('uav_name {}'.format(os.environ['UAV_NAME']))
         rospy.wait_for_service('get_params')
 
         self.config_path, self.save_path, self.circled_param, self.circle_filter_param, self.circle_luv_param, self.save_to_drone = self.set_params()
