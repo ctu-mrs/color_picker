@@ -3,6 +3,9 @@
   <arg name="uav_name" default="$(optenv UAV_NAME uav)"/>
 
   <group ns="$(arg uav_name)">
+    <!-- <node name="compute_launcher" pkg="balloon_color_picker" type="run_compute_on_uav" args="$(arg uav_name)"/> -->
+
+
     <node name="unrepub" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/repub/circled_compressed out:=/$(arg uav_name)/unrepub/circled"/>
     <node name="unrepub_hsv" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/repub_hsv/circled_hsv_compressed out:=/$(arg uav_name)/unrepub/circled_hsv"/>
     <node name="unrepub_lab" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/repub_lab/circled_lab_compressed out:=/$(arg uav_name)/unrepub/circled_lab"/>

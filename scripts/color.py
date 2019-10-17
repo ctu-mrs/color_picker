@@ -608,7 +608,7 @@ class ColorCapture():
         conf_obj['binarization_method'] = req.color_space.data
 
         if  os.path.isdir(req.name.data) is not True:
-            f = file(req.name.data,'rw')
+            f = file(req.name.data,'w')
             yaml.safe_dump(conf_obj,f)
             
             rospy.loginfo('saved to dir {}'.format(req.name.data))
