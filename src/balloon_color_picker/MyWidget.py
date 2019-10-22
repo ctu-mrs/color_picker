@@ -789,6 +789,7 @@ class MyWidget(QWidget):
     def clicked(self, color):
 
         def clicker():
+            self.color_name = color
             self.directory.setText(self.save_path+'/{}.yaml'.format(color))
         return clicker
 
@@ -837,7 +838,11 @@ class MyWidget(QWidget):
         color.data = self.color_space
         save_dir = String()
         save_dir.data = self.directory.text()
-        resp  = self.get_config(color, save_dir)
+        ball_rad = String()
+        ball_rad.data = self.ball_radius.text()
+        color_name = String()
+        color_name.data = self.color_name
+        resp  = self.get_config(color, save_dir, ball_rad, color_name)
         #conf_obj = {}
         ##HSV
         #hsv = {}

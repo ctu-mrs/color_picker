@@ -1,5 +1,7 @@
 std_msgs/String color_space
 std_msgs/String name
+std_msgs/String rad
+std_msgs/String color
 ---
 float64[] h
 float64[] s

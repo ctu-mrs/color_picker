@@ -6,16 +6,16 @@
     <node name="balloon_color_picker" pkg="balloon_color_picker" type="color.py" output="screen">
 
       <!-- Subscribed topics -->
-      <!-- <remap from="image_topic" to="/$(arg uav_name)/rs_d435/color/image_raw" /> -->
+      <remap from="image_topic" to="/$(arg uav_name)/rs_d435/color/image_raw" />
       <!-- <remap from="image_topic" to="/$(arg uav_name)/rs_d435/color/image_rect_color" /> -->
       <!-- <remap from="image_topic" to="/$(arg uav_name)/bluefox_wall/image_raw" /> -->
-      <remap from="image_topic" to="/mv_26807157/image_raw" />
+      <!-- <remap from="image_topic" to="/mv_26807157/image_raw" /> -->
         <!-- Published topics -->
       <remap from="circle_topic" to="~circled" />
       <remap from="circle_hsv" to="~circled_hsv" />
       <remap from="circle_lab" to="~circled_lab" />
         <!-- Params -->
-      <param name='save_dir' value='$(find object_detect)/config/colors/'/>
+      <param name='save_dir' value='$(find object_detect)/config/balls/'/>
       <param name='save_to_drone' value='false'/>
       <param name='config_path' value='$(find balloon_color_picker)/config/balloon_config.yaml'/>
       <param name='circled' value='/$(arg uav_name)/unrepub/circled'/>

@@ -585,7 +585,9 @@ class ColorCapture():
 
     def get_config(self, req):
 
+        color_obj = {}
         conf_obj = {}
+
         #HSV
         hsv = {}
         hsv['hue_center'] = float(self.h_mean)
@@ -607,9 +609,11 @@ class ColorCapture():
 
         conf_obj['binarization_method'] = req.color_space.data
 
+        conf_obj['physical_radius'] = float(req.rad.data)
+        color_obj[req.color.data.lower()] = conf_obj
         if  os.path.isdir(req.name.data) is not True:
             f = file(req.name.data,'w')
-            yaml.safe_dump(conf_obj,f)
+            yaml.safe_dump(color_obj,f)
             
             rospy.loginfo('saved to dir {}'.format(req.name.data))
         

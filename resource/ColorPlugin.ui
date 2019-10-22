@@ -506,13 +506,30 @@
 
   </widget>
 
+  <widget class="QLineEdit" name="ball_radius">
+   <property name="geometry">
+    <rect>
+     <x>850</x>
+     <y>800</y>
+     <width>300</width>
+     <height>27</height>
+    </rect>
+   </property>
+
+   <property name="placeholderText">
+    <string>Ball radius</string>
+   </property>
+
+  </widget>
+
+
   <widget class="QGroupBox" name="color_buttons">
    <property name="geometry">
     <rect>
      <x>900</x>
-     <y>785</y>
+     <y>830</y>
      <width>300</width>
-     <height>300</height>
+     <height>150</height>
     </rect>
    </property>
 
