@@ -581,6 +581,8 @@ class MyWidget(QWidget):
 
 
         q = QPixmap.fromImage(q_img)
+        # self.wdg_img.setFixedWidth(w)
+        # self.wdg_img.setFixedHeight(h)
         self.wdg_img.setPixmap(q)
 
 
@@ -609,6 +611,8 @@ class MyWidget(QWidget):
         q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
 
         q = QPixmap.fromImage(q_img)
+        self.wdg_img.setFixedWidth(w)
+        self.wdg_img.setFixedHeight(h)
         self.wdg_img.setPixmap(q)
 
 # #} end of filter callback
@@ -626,6 +630,8 @@ class MyWidget(QWidget):
 
 
         q = QPixmap.fromImage(q_img)
+        self.wdg_img.setFixedWidth(w)
+        self.wdg_img.setFixedHeight(h)
         self.wdg_img.setPixmap(q)
 
 
@@ -654,6 +660,8 @@ class MyWidget(QWidget):
 
 
         q = QPixmap.fromImage(q_img)
+        self.wdg_img.setFixedWidth(both.shape[1])
+        self.wdg_img.setFixedHeight(both.shape[0])
         self.wdg_img.setPixmap(q)
 
 
