@@ -607,10 +607,12 @@ class ColorCapture():
         lab['b_range'] = float(self.b_sigma*self.sigma_multi_b*2)
         conf_obj['lab'] = lab
 
-        conf_obj['binarization_method'] = req.color_space.data
+        conf_obj['binarization_method_name'] = req.color_space.data
 
-        conf_obj['physical_radius'] = float(req.rad.data)
-        color_obj[req.color.data.lower()] = conf_obj
+        conf_obj['physical_diameter'] = float(req.rad.data)
+        color_name = os.path.basename(req.name.data).lower().split()[0]
+        conf_obj['segment_color_name'] = color_name
+        color_obj['ball'] = conf_obj
         if  os.path.isdir(req.name.data) is not True:
             f = file(req.name.data,'w')
             yaml.safe_dump(color_obj,f)
