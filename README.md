@@ -22,3 +22,6 @@ To select color you can use:
 Feel free to use hotkeys for this, and submit bug report into issues, I'll try to fix them as soon as possible
 
 
+<p align="center">
+  <img src="config/color_picker.png" />
+</p>
