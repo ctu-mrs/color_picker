@@ -776,11 +776,13 @@ class MyWidget(QWidget):
 # #{ load_config
 
     def load_config(self, path):
-        path = os.path.join(os.path.curdir,'../../config/balloon_config.yaml'
-        f = file(path,'r')
-        print(path)
-        res = yaml.safe_load(f)
-        return res['colors']
+        # rospy.loginfo('cur dir {}'.format(os.path.curdir))
+        # path = os.path.join(os.path.curdir,'../../config/balloon_config.yaml')
+        # f = file(path,'r')
+        # print(path)
+        # res = yaml.safe_load(f)
+        colors = ['Red','Green', 'Blue', 'Yellow']
+        return colors
 
 
 # #} end of load_config
