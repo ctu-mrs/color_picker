@@ -4,3 +4,4 @@ string save_path
 string circled
 string circle_filter
 string circle_luv
+bool   save_to_drone

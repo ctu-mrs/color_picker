@@ -2,28 +2,16 @@
 
   <arg name="uav_name" default="$(optenv UAV_NAME uav)"/>
 
-
-    <arg name="gui" default="true" />
-    <node name="repub" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/color/image_raw out:=/$(arg uav_name)/compressed"/>
-
-    <node name="balloon_color_picker" pkg="balloon_color_picker" type="color.py" output="screen">
+  <group ns="$(arg uav_name)">
+    <!-- <node name="compute_launcher" pkg="balloon_color_picker" type="run_compute_on_uav" args="$(arg uav_name)"/> -->
 
 
-      <!-- Subscribed topics -->
-      <remap from="image_topic" to="/$(arg uav_name)/compressed" />
-      <!-- Published topics -->
-      <remap from="circle_topic" to="~circled" />
-      <remap from="circle_hsv" to="~circled_hsv" />
-      <remap from="circle_lab" to="~circled_lab" />
-      <!-- Params -->
-      <param name='save_dir' value='/tmp'/>
-      <param name='config_path' value='$(find balloon_color_picker)/config/balloon_config.yaml'/>
+    <node name="unrepub" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/repub/circled_compressed out:=/$(arg uav_name)/unrepub/circled"/>
+    <node name="unrepub_hsv" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/repub_hsv/circled_hsv_compressed out:=/$(arg uav_name)/unrepub/circled_hsv"/>
+    <node name="unrepub_lab" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/repub_lab/circled_lab_compressed out:=/$(arg uav_name)/unrepub/circled_lab"/>
 
-
-    </node>
     <!-- Gui Node -->
-    <node name="balloon_color_picker_gui" pkg="balloon_color_picker" type="plugin.py" output="screen">
-    </node>
-    
+    <node name="balloon_color_picker_gui" pkg="balloon_color_picker" type="plugin.py" output="screen"/>
+  </group>
 
 </launch>

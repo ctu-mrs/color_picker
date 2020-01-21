@@ -10,6 +10,7 @@ project(balloon_color_picker)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   message_generation
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -46,16 +47,16 @@ catkin_python_setup()
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  HistMsg.msg
+)
 
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
   Capture.srv
+  CaptureCropped.srv
   ChangeSigma.srv
   ChangeSigmaLab.srv
   ClearCount.srv
@@ -63,6 +64,7 @@ add_service_files(
   Save.srv
   GetConfig.srv
   Pic.srv
+  Freeze.srv
   Params.srv
 
   # Service1.srv
@@ -79,7 +81,8 @@ add_service_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  # std_msgs  # Or other packages containing msgs
+  balloon_color_picker
+  std_msgs  # Or other packages containing msgs
 )
 
 ################################################
