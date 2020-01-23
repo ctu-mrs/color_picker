@@ -6,7 +6,7 @@
     <node name="balloon_color_picker" pkg="balloon_color_picker" type="color.py" output="screen">
 
       <!-- Subscribed topics -->
-      <remap from="image_topic" to="/$(arg uav_name)/rs_d435/color/image_raw" />
+      <remap from="image_topic" to="/$(arg uav_name)/unrepub/real" />
       <!-- <remap from="image_topic" to="/$(arg uav_name)/rs_d435/color/image_rect_color" /> -->
       <!-- <remap from="image_topic" to="/$(arg uav_name)/bluefox_wall/image_raw" /> -->
       <!-- <remap from="image_topic" to="/mv_26807157/image_raw" /> -->
@@ -21,10 +21,13 @@
       <param name='circled' value='/$(arg uav_name)/unrepub/circled'/>
       <param name='circled_hsv' value='/$(arg uav_name)/unrepub/circled_hsv'/>
       <param name='circled_lab' value='/$(arg uav_name)/unrepub/circled_lab'/>
+      <param name="object_detect" value="/$(arg uav_name)/object_detect/debug_image" />
 
     </node>
     <!-- Gui Node -->
 
+    <node name="unrepub_bag" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/color/image_raw out:=/$(arg uav_name)/unrepub/real"/>
+    <node name="unrepub_bag_depth" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/aligned_depth_to_color/image_raw out:=/$(arg uav_name)/unrepub_depth/real"/>
     <node name="repub" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled out:=~circled_compressed"/>
     <node name="repub_hsv" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled_hsv out:=~circled_hsv_compressed"/>
     <node name="repub_lab" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled_lab out:=~circled_lab_compressed"/>

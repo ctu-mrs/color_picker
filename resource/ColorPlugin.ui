@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Balloon Color Picker</string>
   </property>
   <widget class="QPushButton" name="clear_button">
    <property name="geometry">
@@ -65,23 +65,36 @@
     <string>Lab(2)</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="change_both">
+  <widget class="QPushButton" name="change_object">
    <property name="geometry">
     <rect>
      <x>480</x>
+     <y>750</y>
+     <width>108</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Object Detect(3)</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="change_both">
+   <property name="geometry">
+    <rect>
+     <x>598</x>
      <y>750</y>
      <width>98</width>
      <height>27</height>
     </rect>
    </property>
    <property name="text">
-    <string>Compare(3)</string>
+    <string>Compare(4)</string>
    </property>
   </widget>
   <widget class="QPushButton" name="freeze_button">
    <property name="geometry">
     <rect>
-     <x>590</x>
+     <x>708</x>
      <y>750</y>
      <width>98</width>
      <height>27</height>
@@ -460,8 +473,8 @@
   <widget class="QLabel" name="image_count">
         <property name="geometry">
           <rect>
-            <x>655</x>
-            <y>749</y>
+            <x>812</x>
+            <y>739</y>
             <width>200</width>
             <height>30</height>
           </rect>
@@ -494,7 +507,7 @@
    <property name="geometry">
     <rect>
      <x>850</x>
-     <y>750</y>
+     <y>770</y>
      <width>300</width>
      <height>27</height>
     </rect>

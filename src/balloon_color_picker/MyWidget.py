@@ -72,9 +72,11 @@ HSV = 0
 LUV = 1
 RGB = 2
 BOTH = 3
+OBD = 4
 
 
 class MyWidget(QWidget):
+
 # #{ init
 
     def __init__(self):
@@ -111,7 +113,7 @@ class MyWidget(QWidget):
         rospy.loginfo('uav_name {}'.format(os.environ['UAV_NAME']))
         rospy.wait_for_service('get_params')
 
-        self.config_path, self.save_path, self.circled_param, self.circle_filter_param, self.circle_luv_param, self.save_to_drone = self.set_params()
+        self.config_path, self.save_path, self.circled_param, self.circle_filter_param, self.circle_luv_param, self.object_detect_param, self.save_to_drone = self.set_params()
         # SUBS
 # #{ ros subs
 
@@ -119,6 +121,7 @@ class MyWidget(QWidget):
         self.balloon_sub = rospy.Subscriber(self.circled_param, RosImg, self.img_callback, queue_size = 1)
         self.filter_sub  = rospy.Subscriber(self.circle_filter_param, RosImg, self.filter_callback, queue_size = 1)
         self.filter_luv  = rospy.Subscriber(self.circle_luv_param, RosImg, self.luv_callback, queue_size = 1)
+        self.obj_det_sb = rospy.Subscriber(self.object_detect_param, RosImg, self.obj_det_callback, queue_size=1)
         self.hsv = message_filters.Subscriber(self.circle_filter_param, RosImg)
         self.luv = message_filters.Subscriber(self.circle_luv_param, RosImg)
 
@@ -249,6 +252,7 @@ class MyWidget(QWidget):
         self.change.clicked.connect(self.switch_view_hsv)
         self.change_both.clicked.connect(self.switch_view_both)
         self.change_luv.clicked.connect(self.switch_view_luv)
+        self.change_object.clicked.connect(self.switch_view_object_detect)
         self.capture_button.clicked.connect(self.capture)
         self.clear_button.clicked.connect(self.clear)
         self.freeze_button.clicked.connect(self.freeze)
@@ -263,7 +267,9 @@ class MyWidget(QWidget):
         self.short_hsv.activated.connect(self.switch_view_hsv)
         self.short_lab = QShortcut(QKeySequence("2"), self)
         self.short_lab.activated.connect(self.switch_view_luv)
-        self.short_both = QShortcut(QKeySequence("3"), self)
+        self.short_object_detect = QShortcut(QKeySequence("3"), self)
+        self.short_object_detect .activated.connect(self.switch_view_object_detect)
+        self.short_both = QShortcut(QKeySequence("4"), self)
         self.short_both.activated.connect(self.switch_view_both)
         self.short_save = QShortcut(QKeySequence("S"), self)
         self.short_save.activated.connect(self.save_config)
@@ -637,6 +643,28 @@ class MyWidget(QWidget):
 
 # #} end of luv_callback
 
+# #{ object_detect_callback
+
+    def obj_det_callback(self,data):
+        if self.view != OBD:
+            return
+        if self.frozen:
+            return
+        img = self.brd.imgmsg_to_cv2(data, 'rgb8')
+        # cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        h,w,c = img.shape
+        q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
+
+
+        q = QPixmap.fromImage(q_img)
+        self.wdg_img.setFixedWidth(w)
+        self.wdg_img.setFixedHeight(h)
+        self.wdg_img.setPixmap(q)
+
+
+# #} end of luv_callback
+
 # #{ both_callback
 
     def both_callback(self,luv,hsv):
@@ -736,10 +764,10 @@ class MyWidget(QWidget):
 # #{ switch_view_hsv
 
     def switch_view_hsv(self):
-        print("HSV")
         if self.view == HSV:
             self.view = RGB
             return
+        print("HSV")
         self.view = HSV
 
 
@@ -748,10 +776,10 @@ class MyWidget(QWidget):
 # #{ switch_view_luv
 
     def switch_view_luv(self):
-        print("LUV")
         if self.view == LUV:
             self.view = RGB
             return
+        print("LUV")
         self.view = LUV
 
 
@@ -760,16 +788,26 @@ class MyWidget(QWidget):
 # #{ swithc_view_both
 
     def switch_view_both(self):
-        print("BOTH")
         if self.view == BOTH:
             self.view = RGB
-
             return
+        print("BOTH")
         self.view = BOTH
 
         self.label_hsv.show()
         self.label_lab.show()
 
+
+# #} end of swithc_view_both
+
+# #{ swithc_view_object_detect
+
+    def switch_view_object_detect(self):
+        if self.view == OBD:
+            self.view = RGB
+            return
+        print("OBD")
+        self.view = OBD
 
 # #} end of swithc_view_both
 
@@ -904,7 +942,7 @@ class MyWidget(QWidget):
         resp = self.get_params()
         print(resp)
         print('params loaded')
-        return resp.config_path, resp.save_path, resp.circled,resp.circle_filter, resp.circle_luv, resp.save_to_drone
+        return resp.config_path, resp.save_path, resp.circled,resp.circle_filter, resp.circle_luv, resp.object_detect, resp.save_to_drone
 
 # #} end of set_params
 

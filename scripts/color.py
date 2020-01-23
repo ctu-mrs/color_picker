@@ -83,6 +83,7 @@ class ColorCapture():
         self.circled_name = rospy.get_param('~circled')
         self.circled_hsv_name = rospy.get_param('~circled_hsv')
         self.circled_lab_name = rospy.get_param('~circled_lab')
+        self.object_detect_name = rospy.get_param('~object_detect')
 
 
         self.cur_img = None
@@ -152,7 +153,7 @@ class ColorCapture():
         # img = img.copy()
         if self.services_ready == False:
 
-            rospy.loginfo('first {}'.format(self.services_ready))
+            rospy.loginfo('First message in, services status: {}'.format(self.services_ready))
 
             self.capture_service = rospy.Service('capture', Capture, self.capture)
             self.capture_cropped_service = rospy.Service('capture_cropped', CaptureCropped, self.capture_cropped)
@@ -674,7 +675,7 @@ class ColorCapture():
 
     def get_params(self, req):
 
-        return ParamsResponse(self.config_path, self.save_dir, self.circled_name, self.circled_hsv_name, self.circled_lab_name,self.save_to_drone)
+        return ParamsResponse(self.config_path, self.save_dir, self.circled_name, self.circled_hsv_name, self.circled_lab_name,self.object_detect_name, self.save_to_drone)
 
 
 # #} end of get_params_for_visualization
