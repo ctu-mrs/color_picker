@@ -610,7 +610,7 @@ class ColorCapture():
         conf_obj['binarization_method_name'] = req.color_space.data
 
         conf_obj['physical_diameter'] = float(req.rad.data)
-        color_name = os.path.basename(req.name.data).lower().split()[0]
+        color_name = os.path.basename(req.name.data).lower().split('.')[0]
         conf_obj['segment_color_name'] = color_name
         color_obj['ball'] = conf_obj
         if  os.path.isdir(req.name.data) is not True:
