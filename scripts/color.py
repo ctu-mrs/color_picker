@@ -231,8 +231,11 @@ class ColorCapture():
 
         self.lower_hsv = lower
         self.upper_hsv = upper
+        white = 255*np.ones_like(img)
         # Bitwise-AND mask and original imagettttt
-        res = cv2.bitwise_and(img,img, mask= mask)
+        res = cv2.bitwise_and(white,white, mask=mask)
+        # rospy.loginfo(' res {}'.format(res[res==0]))
+        
         # msg = self.bridge.cv2_to_imgmsg(res,'rgb8')
         msg = self.bridge.cv2_to_imgmsg(res)
         msg.encoding = "bgr8"
@@ -256,7 +259,10 @@ class ColorCapture():
         mask = cv2.inRange(hsv, lower, upper)
 
         # Bitwise-AND mask and original imagettttt
-        res = cv2.bitwise_and(img,img, mask= mask)
+        # res = cv2.bitwise_and(img,img, mask= mask)
+        white = 255*np.ones_like(img)
+        # Bitwise-AND mask and original imagettttt
+        res = cv2.bitwise_and(white,white, mask=mask)
         # msg = self.bridge.cv2_to_imgmsg(res,'rgb8')
         msg = self.bridge.cv2_to_imgmsg(res)
         msg.encoding = "bgr8"
