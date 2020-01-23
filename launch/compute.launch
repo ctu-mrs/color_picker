@@ -6,7 +6,7 @@
     <node name="balloon_color_picker" pkg="balloon_color_picker" type="color.py" output="screen">
 
       <!-- Subscribed topics -->
-      <remap from="image_topic" to="/$(arg uav_name)/unrepub/real" />
+      <remap from="image_topic" to="/$(arg uav_name)/rs_d435/color/image_raw" />
 
       <!-- Published topics -->
       <remap from="circle_topic" to="~circled" />
@@ -43,8 +43,8 @@
       <param name="segment_name" value="/$(arg uav_name)/object_detect/ball/binarization_method_name" />
     </node>
 
-    <node name="unrepub_bag" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/color/image_raw out:=/$(arg uav_name)/unrepub/real"/>
-    <node name="unrepub_bag_depth" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/aligned_depth_to_color/image_raw out:=/$(arg uav_name)/unrepub_depth/real"/>
+    <!-- <node name="unrepub_bag" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/color/image_raw out:=/$(arg uav_name)/unrepub/real"/> -->
+    <!-- <node name="unrepub_bag_depth" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/aligned_depth_to_color/image_raw out:=/$(arg uav_name)/unrepub_depth/real"/> -->
     <node name="repub" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled out:=~circled_compressed"/>
     <node name="repub_hsv" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled_hsv out:=~circled_hsv_compressed"/>
     <node name="repub_lab" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled_lab out:=~circled_lab_compressed"/>
