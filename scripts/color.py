@@ -48,7 +48,13 @@ from balloon_color_picker.srv import (
     Params,
     ParamsResponse,
     Freeze,
-    FreezeResponse
+    FreezeResponse,
+    UpdateObd,
+    UpdateObdResponse,
+)
+from std_srvs.srv import (
+    Trigger,
+    TriggerResponse
 )
 from balloon_color_picker.msg import (
     HistMsg
@@ -162,6 +168,8 @@ class ColorCapture():
             self.clear_service = rospy.Service('clear_count', ClearCount, self.clear_count)
             self.get_service  = rospy.Service('get_count', GetCount, self.get_count)
             self.config_service  = rospy.Service('get_config', GetConfig, self.get_config)
+            self.object_service  = rospy.Service('change_obd', UpdateObd, self.set_object_detect)
+            self.object_update  = rospy.ServiceProxy('update_obd', Trigger)
             self.pic_service  = rospy.Service('get_pic', Pic, self.save_pic)
             self.freeze_service  = rospy.Service('freeze', Freeze, self.freeze_callback)
             self.params_service  = rospy.Service('get_params', Params, self.get_params)
@@ -350,7 +358,6 @@ class ColorCapture():
             self.average(res)
         else:
             self.h_mean,self.h_sigma  = res[0]
-
             self.s_mean, self.s_sigma = res[1]
             self.v_mean, self.v_sigma = res[2]
 
@@ -679,6 +686,40 @@ class ColorCapture():
 
 
 # #} end of get_params_for_visualization
+
+# #{ set_object_detect
+
+    def set_object_detect(self, req):
+        ## | --------------------- set HSV params --------------------- |
+
+        rospy.set_param("~hue_center", float(self.h_mean))
+        rospy.set_param("~hue_range", float(self.h_sigma))
+        rospy.set_param("~sat_center", float(self.s_mean))
+        rospy.set_param("~sat_range", float(self.s_sigma))
+        rospy.set_param("~val_center", float(self.v_mean))
+        rospy.set_param("~val_range", float(self.v_sigma))
+
+        ## | --------------------- set HSV params --------------------- |
+
+        rospy.set_param("~l_center", float(self.l_mean))
+        rospy.set_param("~l_range", float(self.l_sigma))
+        rospy.set_param("~a_center", float(self.a_mean))
+        rospy.set_param("~a_range", float(self.a_sigma))
+        rospy.set_param("~b_center", float(self.b_mean))
+        rospy.set_param("~b_range", float(self.b_sigma))
+        rospy.set_param("~segment_name", req.color_space.data)
+
+        rospy.loginfo('params set')
+        resp = UpdateObdResponse()
+        if self.object_update.call().success:
+            resp.success = True
+        else:
+            resp.success = False
+
+        return resp
+
+# #} end of set_object_detect
+
 
 if __name__ == '__main__':
     c = ColorCapture()

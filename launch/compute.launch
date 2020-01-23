@@ -7,14 +7,15 @@
 
       <!-- Subscribed topics -->
       <remap from="image_topic" to="/$(arg uav_name)/unrepub/real" />
-      <!-- <remap from="image_topic" to="/$(arg uav_name)/rs_d435/color/image_rect_color" /> -->
-      <!-- <remap from="image_topic" to="/$(arg uav_name)/bluefox_wall/image_raw" /> -->
-      <!-- <remap from="image_topic" to="/mv_26807157/image_raw" /> -->
-        <!-- Published topics -->
+
+      <!-- Published topics -->
       <remap from="circle_topic" to="~circled" />
       <remap from="circle_hsv" to="~circled_hsv" />
       <remap from="circle_lab" to="~circled_lab" />
-        <!-- Params -->
+      <!-- Services -->
+      <remap from="update_obd" to="/$(arg uav_name)/object_detect/regenerate_lut" />
+      
+      <!-- Params -->
       <param name='save_dir' value='$(find object_detect)/config/balls/'/>
       <param name='save_to_drone' value='false'/>
       <param name='config_path' value='$(find balloon_color_picker)/config/balloon_config.yaml'/>
@@ -23,8 +24,24 @@
       <param name='circled_lab' value='/$(arg uav_name)/unrepub/circled_lab'/>
       <param name="object_detect" value="/$(arg uav_name)/object_detect/debug_image" />
 
+      <!-- HSV -->
+      <param name="hue_center" value="/$(arg uav_name)/object_detect/ball/hsv/hue_center" />
+      <param name="hue_range" value="/$(arg uav_name)/object_detect/ball/hsv/hue_range" />
+      <param name="sat_center" value="/$(arg uav_name)/object_detect/ball/hsv/sat_center" />
+      <param name="sat_range" value="/$(arg uav_name)/object_detect/ball/hsv/sat_range" />
+      <param name="val_center" value="/$(arg uav_name)/object_detect/ball/hsv/val_center" />
+      <param name="val_range" value="/$(arg uav_name)/object_detect/ball/hsv/val_range" />
+
+      <!-- LAB -->
+      <param name="l_center" value="/$(arg uav_name)/object_detect/ball/lab/l_center" />
+      <param name="l_range" value="/$(arg uav_name)/object_detect/ball/lab/l_range" />
+      <param name="a_center" value="/$(arg uav_name)/object_detect/ball/lab/a_center" />
+      <param name="a_range" value="/$(arg uav_name)/object_detect/ball/lab/a_range" />
+      <param name="b_center" value="/$(arg uav_name)/object_detect/ball/lab/b_center" />
+      <param name="b_range" value="/$(arg uav_name)/object_detect/ball/lab/b_range" />
+
+      <param name="segment_name" value="/$(arg uav_name)/object_detect/ball/binarization_method_name" />
     </node>
-    <!-- Gui Node -->
 
     <node name="unrepub_bag" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/color/image_raw out:=/$(arg uav_name)/unrepub/real"/>
     <node name="unrepub_bag_depth" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/aligned_depth_to_color/image_raw out:=/$(arg uav_name)/unrepub_depth/real"/>

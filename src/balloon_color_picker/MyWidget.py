@@ -35,6 +35,12 @@ from balloon_color_picker.srv import (
     ParamsResponse,
     Freeze,
     FreezeResponse,
+    UpdateObd,
+    UpdateObdResponse,
+)
+from std_srvs.srv import (
+    Trigger,
+    TriggerResponse
 )
 from PIL import Image
 from qt_gui.plugin import Plugin
@@ -103,6 +109,7 @@ class MyWidget(QWidget):
         self.get_config = rospy.ServiceProxy('get_config', GetConfig)
         self.get_params = rospy.ServiceProxy('get_params', Params)
         self.freeze_service = rospy.ServiceProxy('freeze', Freeze)
+        self.update_service = rospy.ServiceProxy('change_obd', UpdateObd)
 
 
 
@@ -256,6 +263,7 @@ class MyWidget(QWidget):
         self.capture_button.clicked.connect(self.capture)
         self.clear_button.clicked.connect(self.clear)
         self.freeze_button.clicked.connect(self.freeze)
+        self.update_button.clicked.connect(self.update_obd)
         # self.wdg_img.setPixmap(q)
         # self.box_layout.addWidget(self.toolbar)
         # self.inner.box_layout.addWidget(self.canvas)
@@ -785,7 +793,18 @@ class MyWidget(QWidget):
 
 # #} end of switch_view_luv
 
-# #{ swithc_view_both
+# #{ update object detect colors
+
+    def update_obd(self):
+        color = String()
+        color.data = self.color_space
+        rospy.loginfo('updating object detect {}'.format(self.update_service.call(color)))
+
+
+
+# #} end of update object detect colors
+
+# #{ switch_view_both
 
     def switch_view_both(self):
         if self.view == BOTH:
@@ -798,9 +817,9 @@ class MyWidget(QWidget):
         self.label_lab.show()
 
 
-# #} end of swithc_view_both
+# #} end of switch_view_both
 
-# #{ swithc_view_object_detect
+# #{ switch_view_object_detect
 
     def switch_view_object_detect(self):
         if self.view == OBD:
@@ -809,7 +828,7 @@ class MyWidget(QWidget):
         print("OBD")
         self.view = OBD
 
-# #} end of swithc_view_both
+# #} end of switch_view_both
 
 # #{ load_config
 

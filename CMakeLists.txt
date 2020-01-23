@@ -66,6 +66,7 @@ add_service_files(
   Pic.srv
   Freeze.srv
   Params.srv
+  UpdateObd.srv
 
   # Service1.srv
   # Service2.srv
