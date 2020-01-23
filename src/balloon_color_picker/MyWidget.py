@@ -277,6 +277,8 @@ class MyWidget(QWidget):
         self.short_lab.activated.connect(self.switch_view_luv)
         self.short_object_detect = QShortcut(QKeySequence("3"), self)
         self.short_object_detect .activated.connect(self.switch_view_object_detect)
+        self.short_object_detect_update = QShortcut(QKeySequence("U"), self)
+        self.short_object_detect_update .activated.connect(self.update_obd)
         self.short_both = QShortcut(QKeySequence("4"), self)
         self.short_both.activated.connect(self.switch_view_both)
         self.short_save = QShortcut(QKeySequence("S"), self)
