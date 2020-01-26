@@ -158,7 +158,8 @@ class MyWidget(QWidget):
 
         #DIRECTORY
         #default
-        self.directory.setText(self.save_path)
+        self.directory.setText(self.save_path+"Red.yaml")
+        self.color_name = "red"
         self.save_button.clicked.connect(self.save_config)
 
 
@@ -903,6 +904,10 @@ class MyWidget(QWidget):
         save_dir = String()
         save_dir.data = self.directory.text()
         ball_rad = String()
+        if self.ball_radius.text() == "":
+            return
+        if os.path.isdir(self.directory.text()):
+            return
         ball_rad.data = self.ball_radius.text()
         color_name = String()
         color_name.data = self.color_name
