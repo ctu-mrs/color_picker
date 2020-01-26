@@ -206,7 +206,7 @@ class ColorCapture():
             self.cur_img = img.copy()
             self.circle_img = img.copy()
             self.pub_img = img.copy
-        cv2.circle(self.circle_img, cv,r, 20 ,thickness=7, lineType=8, shift=0)
+        # cv2.circle(self.circle_img, cv,r, 20 ,thickness=7, lineType=8, shift=0)
         # imgmsg = self.bridge.cv2_to_imgmsg(img, 'rgb8')
         imgmsg = self.bridge.cv2_to_imgmsg(self.circle_img)
         imgmsg.encoding = "bgr8"
@@ -712,6 +712,7 @@ class ColorCapture():
 
 # #{ set_object_detect
 
+
     def set_object_detect(self, req):
 
         rospy.set_param(self.obd_h_c, float(self.h_mean))
@@ -746,6 +747,7 @@ class ColorCapture():
             resp.success = False
 
         return resp
+
 
 # #} end of set_object_detect
 
