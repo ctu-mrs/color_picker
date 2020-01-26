@@ -91,6 +91,29 @@ class ColorCapture():
         self.circled_lab_name = rospy.get_param('~circled_lab')
         self.object_detect_name = rospy.get_param('~object_detect')
 
+        ## | --------------------- set HSV params --------------------- |
+
+        self.obd_h_c = rospy.get_param("~hue_center")
+        rospy.loginfo('huy {}'.format(self.obd_h_c))
+        self.obd_h_r = rospy.get_param("~hue_range")
+        self.obd_s_c = rospy.get_param("~sat_center")
+        self.obd_s_r = rospy.get_param("~sat_range")
+        self.obd_v_c = rospy.get_param("~val_center")
+        self.obd_v_s = rospy.get_param("~val_range")
+
+        ## | --------------------- get HSV params --------------------- |
+
+        self.obd_l_c = rospy.get_param("~l_center")
+        self.obd_l_r = rospy.get_param("~l_range")
+        self.obd_a_c = rospy.get_param("~a_center")
+        self.obd_a_r = rospy.get_param("~a_range")
+        self.obd_b_c = rospy.get_param("~b_center")
+        self.obd_b_r = rospy.get_param("~b_range")
+        self.obd_segment = rospy.get_param("~segment_name")
+        self.ball_size = rospy.get_param("~ball_size")
+
+
+
 
         self.cur_img = None
         self.circle_img = None
@@ -690,28 +713,30 @@ class ColorCapture():
 # #{ set_object_detect
 
     def set_object_detect(self, req):
+
+        rospy.set_param(self.obd_h_c, float(self.h_mean))
+        rospy.set_param(self.obd_h_r, float(self.h_sigma * self.sigma_multi_h*2))
+        rospy.set_param(self.obd_s_c, float(self.s_mean))
+        rospy.set_param(self.obd_s_r, float(self.s_sigma*self.sigma_multi_s*2))
+        rospy.set_param(self.obd_v_c, float(self.v_mean))
+        rospy.set_param(self.obd_v_s, float(self.v_sigma*self.sigma_multi_v*2))
+
         ## | --------------------- set HSV params --------------------- |
 
-        rospy.set_param("~hue_center", float(self.h_mean))
-        rospy.set_param("~hue_range", float(self.h_sigma))
-        rospy.set_param("~sat_center", float(self.s_mean))
-        rospy.set_param("~sat_range", float(self.s_sigma))
-        rospy.set_param("~val_center", float(self.v_mean))
-        rospy.set_param("~val_range", float(self.v_sigma))
+        rospy.set_param(self.obd_l_c, float(self.l_mean))
+        rospy.set_param(self.obd_l_r, float(self.l_sigma*self.sigma_multi_l*2))
+        rospy.set_param(self.obd_a_c, float(self.a_mean))
+        rospy.set_param(self.obd_a_r, float(self.a_sigma*self.sigma_multi_a*2))
+        rospy.set_param(self.obd_b_c, float(self.b_mean))
+        rospy.set_param(self.obd_b_r, float(self.b_sigma*self.sigma_multi_b*2))
+        rospy.set_param(self.obd_segment, req.color_space.data)
+        rospy.set_param(self.ball_size, float(req.ball_rad.data))
 
-        ## | --------------------- set HSV params --------------------- |
-
-        rospy.set_param("~l_center", float(self.l_mean))
-        rospy.set_param("~l_range", float(self.l_sigma))
-        rospy.set_param("~a_center", float(self.a_mean))
-        rospy.set_param("~a_range", float(self.a_sigma))
-        rospy.set_param("~b_center", float(self.b_mean))
-        rospy.set_param("~b_range", float(self.b_sigma))
-        rospy.set_param("~segment_name", req.color_space.data)
 
 
         rospy.loginfo('params set')
         rospy.loginfo('h {} s {} v {}'.format(self.h_mean, self.s_mean, self.v_mean))
+        rospy.loginfo('sigma h {} s {} v {}'.format(self.h_sigma, self.s_sigma, self.v_sigma))
         rospy.loginfo('l {} a {} b {}'.format(self.l_mean, self.a_mean, self.b_mean))
         rospy.loginfo('binarization name  {} '.format(req.color_space.data))
         resp = UpdateObdResponse()

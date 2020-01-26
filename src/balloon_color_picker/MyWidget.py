@@ -800,7 +800,9 @@ class MyWidget(QWidget):
     def update_obd(self):
         color = String()
         color.data = self.color_space
-        rospy.loginfo('updating object detect {}'.format(self.update_service.call(color)))
+        ball_rad = String()
+        ball_rad.data = self.ball_radius.text()
+        rospy.loginfo('updating object detect {}'.format(self.update_service.call(color, ball_rad)))
 
 
 

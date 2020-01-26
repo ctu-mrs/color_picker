@@ -1,6 +1,7 @@
 <launch>
 
   <arg name="uav_name" default="$(optenv UAV_NAME uav)"/>
+  <arg name="object_detect_prefix" default="object_detect/ball/"/>
 
   <group ns="$(arg uav_name)">
     <node name="balloon_color_picker" pkg="balloon_color_picker" type="color.py" output="screen">
@@ -25,25 +26,26 @@
       <param name="object_detect" value="/$(arg uav_name)/object_detect/debug_image" />
 
       <!-- HSV -->
-      <param name="hue_center" value="/$(arg uav_name)/object_detect/ball/hsv/hue_center" />
-      <param name="hue_range" value="/$(arg uav_name)/object_detect/ball/hsv/hue_range" />
-      <param name="sat_center" value="/$(arg uav_name)/object_detect/ball/hsv/sat_center" />
-      <param name="sat_range" value="/$(arg uav_name)/object_detect/ball/hsv/sat_range" />
-      <param name="val_center" value="/$(arg uav_name)/object_detect/ball/hsv/val_center" />
-      <param name="val_range" value="/$(arg uav_name)/object_detect/ball/hsv/val_range" />
+      <param name="hue_center" value="$(arg object_detect_prefix)hsv/hue_center" />
+      <param name="hue_range" value="$(arg object_detect_prefix)hsv/hue_range" />
+      <param name="sat_center" value="$(arg object_detect_prefix)hsv/sat_center" />
+      <param name="sat_range" value="$(arg object_detect_prefix)hsv/sat_range" />
+      <param name="val_center" value="$(arg object_detect_prefix)hsv/val_center" />
+      <param name="val_range" value="$(arg object_detect_prefix)hsv/val_range" />
 
       <!-- LAB -->
-      <param name="l_center" value="/$(arg uav_name)/object_detect/ball/lab/l_center" />
-      <param name="l_range" value="/$(arg uav_name)/object_detect/ball/lab/l_range" />
-      <param name="a_center" value="/$(arg uav_name)/object_detect/ball/lab/a_center" />
-      <param name="a_range" value="/$(arg uav_name)/object_detect/ball/lab/a_range" />
-      <param name="b_center" value="/$(arg uav_name)/object_detect/ball/lab/b_center" />
-      <param name="b_range" value="/$(arg uav_name)/object_detect/ball/lab/b_range" />
+      <param name="l_center" value="$(arg object_detect_prefix)lab/l_center" />
+      <param name="l_range" value="$(arg object_detect_prefix)lab/l_range" />
+      <param name="a_center" value="$(arg object_detect_prefix)lab/a_center" />
+      <param name="a_range" value="$(arg object_detect_prefix)lab/a_range" />
+      <param name="b_center" value="$(arg object_detect_prefix)lab/b_center" />
+      <param name="b_range" value="$(arg object_detect_prefix)lab/b_range" />
 
-      <param name="segment_name" value="/$(arg uav_name)/object_detect/ball/binarization_method_name" />
+      <param name="segment_name" value="$(arg object_detect_prefix)binarization_method_name" />
+      <param name="ball_size" value="/$(arg uav_name)/$(arg object_detect_prefix)physical_diameter" />
     </node>
 
-    <!-- <node name="unrepub_bag" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/color/image_raw out:=/$(arg uav_name)/unrepub/real"/> -->
+    <node name="unrepub_bag" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/color/image_raw out:=/$(arg uav_name)/rs_d435/color/image_raw"/>
     <!-- <node name="unrepub_bag_depth" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/aligned_depth_to_color/image_raw out:=/$(arg uav_name)/unrepub_depth/real"/> -->
     <node name="repub" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled out:=~circled_compressed"/>
     <node name="repub_hsv" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled_hsv out:=~circled_hsv_compressed"/>
