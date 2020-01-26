@@ -709,7 +709,11 @@ class ColorCapture():
         rospy.set_param("~b_range", float(self.b_sigma))
         rospy.set_param("~segment_name", req.color_space.data)
 
+
         rospy.loginfo('params set')
+        rospy.loginfo('h {} s {} v {}'.format(self.h_mean, self.s_mean, self.v_mean))
+        rospy.loginfo('l {} a {} b {}'.format(self.l_mean, self.a_mean, self.b_mean))
+        rospy.loginfo('binarization name  {} '.format(req.color_space.data))
         resp = UpdateObdResponse()
         if self.object_update.call().success:
             resp.success = True
