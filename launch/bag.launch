@@ -1,0 +1,55 @@
+<launch>
+
+  <arg name="uav_name" default="$(optenv UAV_NAME uav)"/>
+  <arg name="object_detect_prefix" default="object_detect/ball/"/>
+
+  <group ns="$(arg uav_name)">
+    <node name="balloon_color_picker" pkg="balloon_color_picker" type="color.py" output="screen">
+
+      <!-- Subscribed topics -->
+      <remap from="image_topic" to="/$(arg uav_name)/rs_d435/color/image_raw" />
+
+      <!-- Published topics -->
+      <remap from="circle_topic" to="~circled" />
+      <remap from="circle_hsv" to="~circled_hsv" />
+      <remap from="circle_lab" to="~circled_lab" />
+      <!-- Services -->
+      <remap from="update_obd" to="/$(arg uav_name)/object_detect/regenerate_lut" />
+      
+      <!-- Params -->
+      <param name='save_dir' value='$(find object_detect)/config/balls/'/>
+      <param name='save_to_drone' value='false'/>
+      <param name='config_path' value='$(find balloon_color_picker)/config/balloon_config.yaml'/>
+      <param name='circled' value='balloon_color_picker/circled'/>
+      <param name='circled_hsv' value='balloon_color_picker/circled_hsv'/>
+      <param name='circled_lab' value='balloon_color_picker/circled_lab'/>
+      <param name="object_detect" value="/$(arg uav_name)/object_detect/debug_image" />
+
+      <!-- HSV -->
+      <param name="hue_center" value="$(arg object_detect_prefix)hsv/hue_center" />
+      <param name="hue_range" value="$(arg object_detect_prefix)hsv/hue_range" />
+      <param name="sat_center" value="$(arg object_detect_prefix)hsv/sat_center" />
+      <param name="sat_range" value="$(arg object_detect_prefix)hsv/sat_range" />
+      <param name="val_center" value="$(arg object_detect_prefix)hsv/val_center" />
+      <param name="val_range" value="$(arg object_detect_prefix)hsv/val_range" />
+
+      <!-- LAB -->
+      <param name="l_center" value="$(arg object_detect_prefix)lab/l_center" />
+      <param name="l_range" value="$(arg object_detect_prefix)lab/l_range" />
+      <param name="a_center" value="$(arg object_detect_prefix)lab/a_center" />
+      <param name="a_range" value="$(arg object_detect_prefix)lab/a_range" />
+      <param name="b_center" value="$(arg object_detect_prefix)lab/b_center" />
+      <param name="b_range" value="$(arg object_detect_prefix)lab/b_range" />
+
+      <param name="segment_name" value="$(arg object_detect_prefix)binarization_method_name" />
+      <param name="ball_size" value="/$(arg uav_name)/$(arg object_detect_prefix)physical_diameter" />
+    </node>
+
+    <node name="unrepub_bag" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/color/image_raw out:=/$(arg uav_name)/rs_d435/color/image_raw"/>
+
+    <!-- Gui Node -->
+    <node name="balloon_color_picker_gui" pkg="balloon_color_picker" type="plugin.py" output="screen"/>
+  </group>
+
+
+</launch>
