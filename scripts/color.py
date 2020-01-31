@@ -68,6 +68,7 @@ from std_msgs.msg import (
 
 HSV = 0
 LAB = 1
+RAW = 2
 
 class ColorCapture():
 
@@ -94,7 +95,6 @@ class ColorCapture():
         ## | --------------------- set HSV params --------------------- |
 
         self.obd_h_c = rospy.get_param("~hue_center")
-        rospy.loginfo('huy {}'.format(self.obd_h_c))
         self.obd_h_r = rospy.get_param("~hue_range")
         self.obd_s_c = rospy.get_param("~sat_center")
         self.obd_s_r = rospy.get_param("~sat_range")
@@ -162,12 +162,13 @@ class ColorCapture():
 
         self.hist_l = np.zeros([2,255])
         self.hist_l[1] = np.arange(255)
-        self.hist_a = np.zeros([2,256])
-        self.hist_a[1] = np.arange(256)
-        self.hist_b = np.zeros([2,223])
-        self.hist_b[1] = np.arange(223)
+        self.hist_a = np.zeros([2,255])
+        self.hist_a[1] = np.arange(255)
+        self.hist_b = np.zeros([2,255])
+        self.hist_b[1] = np.arange(255)
         self.freeze = False
         self.color_space = 'HSV'
+        self.sub = RAW
 
 
 
@@ -177,6 +178,8 @@ class ColorCapture():
 # #{ balloon_img_callback
 
     def balloon_call(self,data):
+        if self.sub != RAW:
+            return
 
         img = self.bridge.imgmsg_to_cv2(data, "bgr8")
         # img = img.copy()
@@ -218,6 +221,8 @@ class ColorCapture():
 # #{ balloon_filtered_hsv_callback
 
     def balloon_filter(self,data):
+        if self.sub != HSV:
+            return
 
         img = np.array(self.cur_img.copy(), dtype=np.uint8)
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -279,6 +284,10 @@ class ColorCapture():
 # #{ balloon_filter_lab_callback 
 
     def balloon_filter_lab(self,data):
+        if self.sub != LAB:
+            return
+
+
         # img = self.bridge.imgmsg_to_cv2(data, "bgr8")
         img = np.array(self.cur_img.copy(), dtype=np.uint8)
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
@@ -468,8 +477,8 @@ class ColorCapture():
         hist_v = np.histogram(v, range=[0,255],bins=255)
 
         hist_l = np.histogram(l, range=[0,255],bins=255)
-        hist_a = np.histogram(a, range=[0,256],bins=256)
-        hist_b = np.histogram(b, range=[0,223],bins=223)
+        hist_a = np.histogram(a, range=[0,255],bins=255)
+        hist_b = np.histogram(b, range=[0,255],bins=255)
         self.hist_h[0] += hist_h[0]
         self.hist_s[0] += hist_s[0]
         self.hist_v[0] += hist_v[0]
@@ -560,16 +569,16 @@ class ColorCapture():
         if color_space == HSV:
             
             if self.img_count > 0:
-                self.hsv_roi +=cv2.calcHist(images=[hsv],channels=[0, 1,2], mask=self.mask, histSize=[180, 256,255], ranges=[0, 180, 0, 256,0,255] )
+                self.hsv_roi +=cv2.calcHist(images=[hsv],channels=[0, 1,2], mask=self.mask, histSize=[180, 255,255], ranges=[0, 180, 0, 255,0,255] )
             else:
                 rospy.loginfo('shape {}'.format(masked.shape))
-                self.hsv_roi = cv2.calcHist(images=[hsv],channels=[0, 1,2], mask=self.mask, histSize=[180, 256,255], ranges=[0, 180, 0, 256,0,255] )
+                self.hsv_roi = cv2.calcHist(images=[hsv],channels=[0, 1,2], mask=self.mask, histSize=[180, 255,255], ranges=[0, 180, 0, 255,0,255] )
         elif color_space == LAB:
             if self.img_count > 0:
-                self.lab_roi += cv2.calcHist(images=[hsv],channels=[0, 1,2], mask=self.mask, histSize=[225, 256,223], ranges=[0, 225, 0, 256,0,223])
+                self.lab_roi += cv2.calcHist(images=[hsv],channels=[0, 1,2], mask=self.mask, histSize=[255, 255,255], ranges=[0, 255, 0, 255,0,255])
             else:
                 rospy.loginfo('shape {}'.format(hsv.shape))
-                self.lab_roi = cv2.calcHist(images=[hsv],channels=[0, 1,2], mask=self.mask, histSize=[225, 256,223], ranges=[0, 225, 0, 256,0,223])
+                self.lab_roi = cv2.calcHist(images=[hsv],channels=[0, 1,2], mask=self.mask, histSize=[255, 255,255], ranges=[0, 255, 0, 255,0,255])
         a = masked[:, 0]
         b = masked[:, 1]
         c = masked[:, 2]

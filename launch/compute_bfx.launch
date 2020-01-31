@@ -45,7 +45,7 @@
       <param name="ball_size" value="/$(arg uav_name)/$(arg object_detect_prefix)physical_diameter" />
     </node>
 
-    <node name="unrepub_bag" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/rs_d435/color/image_raw out:=/$(arg uav_name)/unerpub/color"/>
+    <node name="unrepub_bag" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/bluefox3_front/image_raw  out:=/$(arg uav_name)/unerpub/color"/>
 
     <!-- <node name="repub" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled out:=~circled_compressed"/> -->
     <!-- <node name="repub_hsv" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled_hsv out:=~circled_hsv_compressed"/> -->
