@@ -37,6 +37,8 @@ from balloon_color_picker.srv import (
     FreezeResponse,
     UpdateObd,
     UpdateObdResponse,
+    ChangeCallback,
+    ChangeCallbackResponse,
 )
 from std_srvs.srv import (
     Trigger,
@@ -110,6 +112,7 @@ class MyWidget(QWidget):
         self.get_params = rospy.ServiceProxy('get_params', Params)
         self.freeze_service = rospy.ServiceProxy('freeze', Freeze)
         self.update_service = rospy.ServiceProxy('change_obd', UpdateObd)
+        self.change_callback = rospy.ServiceProxy('change_callback', ChangeCallback)
 
 
 
@@ -777,9 +780,11 @@ class MyWidget(QWidget):
     def switch_view_hsv(self):
         if self.view == HSV:
             self.view = RGB
+            self.set_view(self.view)
             return
         print("HSV")
         self.view = HSV
+        self.set_view(self.view)
 
 
 # #} end of switch_view_hsv
@@ -789,9 +794,11 @@ class MyWidget(QWidget):
     def switch_view_luv(self):
         if self.view == LUV:
             self.view = RGB
+            self.set_view(self.view)
             return
         print("LUV")
         self.view = LUV
+        self.set_view(self.view)
 
 
 # #} end of switch_view_luv
@@ -814,9 +821,11 @@ class MyWidget(QWidget):
     def switch_view_both(self):
         if self.view == BOTH:
             self.view = RGB
+            self.set_view(self.view)
             return
         print("BOTH")
         self.view = BOTH
+        self.set_view(self.view)
 
         self.label_hsv.show()
         self.label_lab.show()
@@ -973,6 +982,17 @@ class MyWidget(QWidget):
         return resp.config_path, resp.save_path, resp.circled,resp.circle_filter, resp.circle_luv, resp.object_detect, resp.save_to_drone
 
 # #} end of set_params
+
+# #{ set_view
+
+    def set_view(self, view):
+        self.change_callback(view)
+
+
+
+# #} end of set_view        
+
+
 
 # #{ default todo's
 

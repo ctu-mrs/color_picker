@@ -51,6 +51,8 @@ from balloon_color_picker.srv import (
     FreezeResponse,
     UpdateObd,
     UpdateObdResponse,
+    ChangeCallback,
+    ChangeCallbackResponse,
 )
 from std_srvs.srv import (
     Trigger,
@@ -69,6 +71,7 @@ from std_msgs.msg import (
 HSV = 0
 LAB = 1
 RAW = 2
+BOTH = 3
 
 class ColorCapture():
 
@@ -199,6 +202,7 @@ class ColorCapture():
             self.pic_service  = rospy.Service('get_pic', Pic, self.save_pic)
             self.freeze_service  = rospy.Service('freeze', Freeze, self.freeze_callback)
             self.params_service  = rospy.Service('get_params', Params, self.get_params)
+            self.callback_service = rospy.Service('change_callback', ChangeCallback, self.change_callback)
             self.prepare_mask(img)
             rospy.loginfo('Services started')
             self.services_ready = True
@@ -759,6 +763,13 @@ class ColorCapture():
 
 
 # #} end of set_object_detect
+
+    def change_callback(self, req):
+        self.sub = req.color_space
+        resp = ChangeCallbackResponse()
+        resp.success = True
+        return resp
+
 
 
 if __name__ == '__main__':

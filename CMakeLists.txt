@@ -67,7 +67,7 @@ add_service_files(
   Freeze.srv
   Params.srv
   UpdateObd.srv
-
+  ChangeCallback.srv
   # Service1.srv
   # Service2.srv
 )
