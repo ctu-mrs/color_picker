@@ -181,8 +181,6 @@ class ColorCapture():
 # #{ balloon_img_callback
 
     def balloon_call(self,data):
-        if self.sub != RAW:
-            return
 
         img = self.bridge.imgmsg_to_cv2(data, "bgr8")
         # img = img.copy()
@@ -217,8 +215,11 @@ class ColorCapture():
         # imgmsg = self.bridge.cv2_to_imgmsg(img, 'rgb8')
         imgmsg = self.bridge.cv2_to_imgmsg(self.circle_img)
         imgmsg.encoding = "bgr8"
-        self.circle_pub.publish(imgmsg)
 
+        if self.sub != RAW:
+            return
+
+        self.circle_pub.publish(imgmsg)
 
 # #} end of balloon_img_callback
 
