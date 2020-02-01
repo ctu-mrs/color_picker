@@ -98,6 +98,8 @@ class MyWidget(QWidget):
         self.setObjectName('ColorPluginUi')
         self.uav_name = os.environ['UAV_NAME']
 
+        self.orig_h = 920
+        self.orig_w = 1080
         # ROS services
 
 # #{ ros services
@@ -362,8 +364,11 @@ class MyWidget(QWidget):
             sx = float(self.wdg_img.rect().width())
             sy = float(self.wdg_img.rect().height())
             
-            sx = pix.width() / sx
-            sy = pix.height() / sy
+            rospy.loginfo('width {}'.format(pix.width()))
+            # h 1080 w 1920
+            rospy.loginfo('orig h {} w {}'.format(self.orig_h, self.orig_w))
+            sx = self.orig_w / sx
+            sy = self.orig_h / sy
 
             a.setX(int(a.x()*sx))
             a.setY(int(a.y()*sy))
@@ -376,6 +381,7 @@ class MyWidget(QWidget):
             w_ = rect_.width()
 
             y1,x1,y2,x2 = rect_.getCoords()
+            rospy.loginfo(' data x1 {} y1 {} x2 {} y2{}'.format(x1,y1,x2,y2))
             self.capture_cropped(x1,y1,x2,y2)
 
 # #} end of mouse events
@@ -594,15 +600,20 @@ class MyWidget(QWidget):
         if self.view != RGB:
             return
         img = self.brd.imgmsg_to_cv2(data, 'rgb8')
+        h,w,c = img.shape
+        self.orig_h = h
+        self.orig_w = w
+        # rospy.loginfo('h {} w {}'.format(h,w))
         # cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+        img = cv2.resize(img, dsize=(1280,720), interpolation=cv2.INTER_CUBIC)
         h,w,c = img.shape
         q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
 
 
         q = QPixmap.fromImage(q_img)
-        # self.wdg_img.setFixedWidth(w)
-        # self.wdg_img.setFixedHeight(h)
+        self.wdg_img.setFixedWidth(1280)
+        self.wdg_img.setFixedHeight(720)
         self.wdg_img.setPixmap(q)
 
 
@@ -627,12 +638,15 @@ class MyWidget(QWidget):
         img = self.brd.imgmsg_to_cv2(data, 'rgb8')
         # cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+        img = cv2.resize(img, dsize=(1280,720), interpolation=cv2.INTER_CUBIC)
         h,w,c = img.shape
+
         q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
 
         q = QPixmap.fromImage(q_img)
-        self.wdg_img.setFixedWidth(w)
-        self.wdg_img.setFixedHeight(h)
+
+        self.wdg_img.setFixedWidth(1280)
+        self.wdg_img.setFixedHeight(720)
         self.wdg_img.setPixmap(q)
 
 # #} end of filter callback
@@ -645,14 +659,19 @@ class MyWidget(QWidget):
         img = self.brd.imgmsg_to_cv2(data, 'rgb8')
         # cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+        img = cv2.resize(img, dsize=(1280,720), interpolation=cv2.INTER_CUBIC)
         h,w,c = img.shape
+        # rospy.loginfo('shape {}'.format(img.shape))
+
         q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
 
 
         q = QPixmap.fromImage(q_img)
-        self.wdg_img.setFixedWidth(w)
-        self.wdg_img.setFixedHeight(h)
+        # self.wdg_img.setFixedWidth(w)
+        # self.wdg_img.setFixedHeight(h)
+
         self.wdg_img.setPixmap(q)
+
 
 
 # #} end of luv_callback
@@ -991,8 +1010,6 @@ class MyWidget(QWidget):
 
 
 # #} end of set_view        
-
-
 
 # #{ default todo's
 

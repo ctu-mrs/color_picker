@@ -213,11 +213,11 @@ class ColorCapture():
             self.pub_img = img.copy
         # cv2.circle(self.circle_img, cv,r, 20 ,thickness=7, lineType=8, shift=0)
         # imgmsg = self.bridge.cv2_to_imgmsg(img, 'rgb8')
+        if self.sub != RAW:
+            return
         imgmsg = self.bridge.cv2_to_imgmsg(self.circle_img)
         imgmsg.encoding = "bgr8"
 
-        if self.sub != RAW:
-            return
 
         self.circle_pub.publish(imgmsg)
 
@@ -765,6 +765,8 @@ class ColorCapture():
 
 # #} end of set_object_detect
 
+# #{ change_callback
+
     def change_callback(self, req):
         self.sub = req.color_space
         resp = ChangeCallbackResponse()
@@ -772,6 +774,8 @@ class ColorCapture():
         return resp
 
 
+
+# #} end of change_callback
 
 if __name__ == '__main__':
     c = ColorCapture()
