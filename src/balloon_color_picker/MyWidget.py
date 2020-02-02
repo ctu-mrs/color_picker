@@ -1022,29 +1022,9 @@ class MyWidget(QWidget):
 
     def set_hist(self, hist_resp):
         hist = np.array(hist_resp.hist)
-        np.savetxt('/home/mrs/balloon_workspace/src/ros_packages/balloon_color_picker/tests/sample.txt', hist)
-        hist = np.reshape(hist, (180,255))
-        # new_h = np.zeros([180,255,3])
-        # for i in range(hist.shape[0]):
-        #     for j in range(hist.shape[1]):
-        #         if hist[i,j] == 0:
-        #            continue 
-        #         new_h[i,j] = [255,255,255]
-
+        hist = np.reshape(hist, (180,256))
         new_h = cv2.resize(hist, dsize=(600,500), interpolation=cv2.INTER_CUBIC)
         new_h = new_h.astype('uint8')
-        
-
-
-        # while(1):
-        #     cv2.imshow('sample', new_h)
-        #     k = cv2.waitKey(33)
-        #     if k==27:    # Esc key to stop
-        #         break
-        #     elif k==-1:  # normally -1 returned,so don't print it
-        #         continue
-        #     else:
-                # print k # else print its value
         rospy.loginfo('new_h shape {}'.format(new_h.shape))
 
         h,w = new_h.shape
