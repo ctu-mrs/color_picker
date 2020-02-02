@@ -151,6 +151,7 @@ class ColorCapture():
         self.hist_s[1] = np.arange(255)
         self.hist_v = np.zeros([2,255])
         self.hist_v[1] = np.arange(255)
+        self.hist_hs = np.zeros([180,256])
 
         ## lab
         self.l_mean = 0
@@ -805,10 +806,11 @@ class ColorCapture():
         minVal, maxVal, l, m = cv2.minMaxLoc(hist)
         print("min {} max {}".format(minVal, maxVal))
         hist = (hist-minVal)/(maxVal-minVal)*255.0
+        self.hist_hs += hist
 
         resp = CaptureHistResponse()
         resp.shape = hist.shape
-        resp.hist = hist.flatten().tolist()
+        resp.hist = self.hist_hs.flatten().tolist()
 
         return resp
 
