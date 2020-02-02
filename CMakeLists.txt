@@ -68,6 +68,7 @@ add_service_files(
   Params.srv
   UpdateObd.srv
   ChangeCallback.srv
+  CaptureHist.srv
   # Service1.srv
   # Service2.srv
 )

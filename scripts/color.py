@@ -53,6 +53,8 @@ from balloon_color_picker.srv import (
     UpdateObdResponse,
     ChangeCallback,
     ChangeCallbackResponse,
+    CaptureHist,
+    CaptureHistResponse,
 )
 from std_srvs.srv import (
     Trigger,
@@ -201,6 +203,7 @@ class ColorCapture():
             self.freeze_service  = rospy.Service('freeze', Freeze, self.freeze_callback)
             self.params_service  = rospy.Service('get_params', Params, self.get_params)
             self.callback_service = rospy.Service('change_callback', ChangeCallback, self.change_callback)
+            self.capture_hist = rospy.Service('capture_hist', CaptureHist, self.create_hist)
             self.prepare_mask(img)
             rospy.loginfo('Services started')
             self.services_ready = True
@@ -776,6 +779,47 @@ class ColorCapture():
 
 
 # #} end of change_callback
+
+# #{ create_hist response
+
+    def create_hist(self,req):
+        mask = self.get_mask(req.x1, req.y1, req.x2, req.y2)  
+        hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
+        hbin = 180
+        sbin = 255 
+        histSize = [hbin, sbin]
+        hrange = [0,180]
+        srange = [0,256]
+
+        ranges = [hrange, srange]
+
+        channels = [0,1]
+
+        hist = cv2.calcHist(
+            images=[hsv],
+            channels=channels,
+            mask = mask.astype('uint8'),
+            histSize = histSize,
+            ranges = [0,180,0,256]
+        )
+        minVal, maxVal, l, m = cv2.minMaxLoc(hist)
+        print("min {} max {}".format(minVal, maxVal))
+        hist = (hist-minVal)/(maxVal-minVal)*255.0
+
+        resp = CaptureHistResponse()
+        resp.shape = hist.shape
+        resp.hist = hist.flatten()
+
+        return resp
+
+
+
+
+# #} end of create_hist response
+       
+
+
+
 
 if __name__ == '__main__':
     c = ColorCapture()

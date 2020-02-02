@@ -39,6 +39,8 @@ from balloon_color_picker.srv import (
     UpdateObdResponse,
     ChangeCallback,
     ChangeCallbackResponse,
+    CaptureHist,
+    CaptureHistResponse,
 )
 from std_srvs.srv import (
     Trigger,
@@ -115,6 +117,7 @@ class MyWidget(QWidget):
         self.freeze_service = rospy.ServiceProxy('freeze', Freeze)
         self.update_service = rospy.ServiceProxy('change_obd', UpdateObd)
         self.change_callback = rospy.ServiceProxy('change_callback', ChangeCallback)
+        self.capture_hist = rospy.ServiceProxy('capture_hist', CaptureHist)
 
 
 
@@ -180,6 +183,7 @@ class MyWidget(QWidget):
         # self.toolbar.setParent(self.inner)
         # self.toolbar_luv.setParent(self.inner_luv)
         self.canvas_luv.setParent(self.inner_luv)
+        self.inner_luv.hide()
 
         #SLIDER CONFIG
 
@@ -325,6 +329,7 @@ class MyWidget(QWidget):
         cursor =QCursor()
         x = QMouseEvent.x()
         y = QMouseEvent.y()
+        rospy.loginfo('event button {}'.format(QMouseEvent.button))
         if x < 1280 and y < 720:
             if self._rubber == None:
                 if  not self.frozen:
@@ -364,9 +369,7 @@ class MyWidget(QWidget):
             sx = float(self.wdg_img.rect().width())
             sy = float(self.wdg_img.rect().height())
             
-            rospy.loginfo('width {}'.format(pix.width()))
             # h 1080 w 1920
-            rospy.loginfo('orig h {} w {}'.format(self.orig_h, self.orig_w))
             sx = self.orig_w / sx
             sy = self.orig_h / sy
 
@@ -381,7 +384,7 @@ class MyWidget(QWidget):
             w_ = rect_.width()
 
             y1,x1,y2,x2 = rect_.getCoords()
-            rospy.loginfo(' data x1 {} y1 {} x2 {} y2{}'.format(x1,y1,x2,y2))
+            rospy.loginfo('cropeed x1 {} y1 {} x2 {} y2{}'.format(x1,y1,x2,y2))
             self.capture_cropped(x1,y1,x2,y2)
 
 # #} end of mouse events
@@ -786,7 +789,9 @@ class MyWidget(QWidget):
     def capture_cropped(self, x1,y1,x2,y2):
 
         res=  self.capture_cropped_srv(x1,y1,x2,y2)
+        hist = self.capture_hist(x1,y1,x2,y2)
         # rospy.loginfo('response {}'.format(res))
+
         self.plot(res.h, res.s,res.v,res.l,res.u,res.lv, res.means, res.sigmas)
         self.image_count.setText('Samples: {} '.format(res.count))
 

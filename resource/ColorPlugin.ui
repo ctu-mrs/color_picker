@@ -196,6 +196,18 @@
       </widget>
     </hbox>
   </widget>
+  <widget class="QLabel" name="inner_hist">
+    <property name="geometry">
+      <rect>
+        <x>1290</x>
+        <y>500</y>
+        <width>1280</width>
+        <height>720</height>
+      </rect>
+    </property>
+  </widget>
+
+
   <widget class="QWidget" name="inner_luv">
     <property name="geometry">
       <rect>
