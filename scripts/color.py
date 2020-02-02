@@ -804,9 +804,6 @@ class ColorCapture():
             histSize = histSize,
             ranges = [0,180,0,256]
         )
-        # minVal, maxVal, l, m = cv2.minMaxLoc(hist)
-        # print("min {} max {}".format(minVal, maxVal))
-        # hist = (hist-minVal)/(maxVal-minVal)*255.0
         if self.hist_hs is None:
             self.hist_hs = hist.astype('float')
         else:

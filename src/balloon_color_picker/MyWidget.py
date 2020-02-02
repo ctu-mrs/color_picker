@@ -1025,12 +1025,11 @@ class MyWidget(QWidget):
         hist = np.reshape(hist, hist_resp.shape)
 
         minVal, maxVal, l, m = cv2.minMaxLoc(hist)
-        # print("min {} max {}".format(minVal, maxVal))
         hist = (hist-minVal)/(maxVal-minVal)*255.0
 
         histRGB = cv2.cvtColor(hist.astype('uint8'), cv2.COLOR_GRAY2RGB)
         new_h = cv2.resize(histRGB, dsize=(600,500), interpolation=cv2.INTER_CUBIC)
-        # new_h = new_h.astype('uint8')
+
         rospy.loginfo('new_h shape {}'.format(new_h.shape))
 
         h,w,c = new_h.shape
