@@ -1022,7 +1022,7 @@ class MyWidget(QWidget):
 
     def set_hist(self, hist_resp):
         hist = np.array(hist_resp.hist)
-        hist = np.reshape(hist, (180,256))
+        hist = np.reshape(hist, hist_resp.shape)
         new_h = cv2.resize(hist, dsize=(600,500), interpolation=cv2.INTER_CUBIC)
         new_h = new_h.astype('uint8')
         rospy.loginfo('new_h shape {}'.format(new_h.shape))
