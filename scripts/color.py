@@ -808,7 +808,7 @@ class ColorCapture():
 
         resp = CaptureHistResponse()
         resp.shape = hist.shape
-        resp.hist = hist.flatten()
+        resp.hist = hist.flatten().tolist()
 
         return resp
 
