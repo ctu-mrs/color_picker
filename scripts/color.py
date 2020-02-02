@@ -784,7 +784,7 @@ class ColorCapture():
 
     def create_hist(self,req):
         mask = self.get_mask(req.x1, req.y1, req.x2, req.y2)  
-        hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
+        hsv = cv2.cvtColor(self.cur_img, cv2.COLOR_BGR2HSV)
         hbin = 180
         sbin = 255 
         histSize = [hbin, sbin]
