@@ -1023,14 +1023,20 @@ class MyWidget(QWidget):
     def set_hist(self, hist_resp):
         hist = np.array(hist_resp.hist)
         hist = np.reshape(hist, hist_resp.shape)
-        new_h = cv2.resize(hist, dsize=(600,500), interpolation=cv2.INTER_CUBIC)
-        new_h = new_h.astype('uint8')
+
+        minVal, maxVal, l, m = cv2.minMaxLoc(hist)
+        # print("min {} max {}".format(minVal, maxVal))
+        hist = (hist-minVal)/(maxVal-minVal)*255.0
+
+        histRGB = cv2.cvtColor(hist.astype('uint8'), cv2.COLOR_GRAY2RGB)
+        new_h = cv2.resize(histRGB, dsize=(600,500), interpolation=cv2.INTER_CUBIC)
+        # new_h = new_h.astype('uint8')
         rospy.loginfo('new_h shape {}'.format(new_h.shape))
 
-        h,w = new_h.shape
+        h,w,c = new_h.shape
         total = new_h.nbytes
         perLine = int(total/h)
-        q_img = QImage(new_h.data, w,h,perLine, QImage.Format_Grayscale8)
+        q_img = QImage(new_h.data, w,h,perLine, QImage.Format_RGB888)
 
 
         q = QPixmap.fromImage(q_img)
