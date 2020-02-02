@@ -384,7 +384,7 @@ class MyWidget(QWidget):
             w_ = rect_.width()
 
             y1,x1,y2,x2 = rect_.getCoords()
-            rospy.loginfo('cropeed x1 {} y1 {} x2 {} y2{}'.format(x1,y1,x2,y2))
+            rospy.loginfo('cropped x1 {} y1 {} x2 {} y2{}'.format(x1,y1,x2,y2))
             self.capture_cropped(x1,y1,x2,y2)
 
 # #} end of mouse events
@@ -788,8 +788,10 @@ class MyWidget(QWidget):
 
     def capture_cropped(self, x1,y1,x2,y2):
 
-        res=  self.capture_cropped_srv(x1,y1,x2,y2)
-        hist = self.capture_hist(x1,y1,x2,y2)
+        res  =  self.capture_cropped_srv(x1,y1,x2,y2)
+        hist =  self.capture_hist(x1,y1,x2,y2)
+        self.set_hist(hist)
+
         # rospy.loginfo('response {}'.format(res))
 
         self.plot(res.h, res.s,res.v,res.l,res.u,res.lv, res.means, res.sigmas)
@@ -1015,6 +1017,50 @@ class MyWidget(QWidget):
 
 
 # #} end of set_view        
+
+# #{ set_hist
+
+    def set_hist(self, hist_resp):
+        hist = np.array(hist_resp.hist)
+        np.savetxt('/home/mrs/balloon_workspace/src/ros_packages/balloon_color_picker/tests/sample.txt', hist)
+        hist = np.reshape(hist, (180,255))
+        # new_h = np.zeros([180,255,3])
+        # for i in range(hist.shape[0]):
+        #     for j in range(hist.shape[1]):
+        #         if hist[i,j] == 0:
+        #            continue 
+        #         new_h[i,j] = [255,255,255]
+
+        new_h = cv2.resize(hist, dsize=(600,500), interpolation=cv2.INTER_CUBIC)
+        new_h = new_h.astype('uint8')
+        
+
+
+        # while(1):
+        #     cv2.imshow('sample', new_h)
+        #     k = cv2.waitKey(33)
+        #     if k==27:    # Esc key to stop
+        #         break
+        #     elif k==-1:  # normally -1 returned,so don't print it
+        #         continue
+        #     else:
+                # print k # else print its value
+        rospy.loginfo('new_h shape {}'.format(new_h.shape))
+
+        h,w = new_h.shape
+        total = new_h.nbytes
+        perLine = int(total/h)
+        q_img = QImage(new_h.data, w,h,perLine, QImage.Format_Grayscale8)
+
+
+        q = QPixmap.fromImage(q_img)
+        self.inner_hist.setFixedWidth(600)
+        self.inner_hist.setFixedHeight(500)
+        self.inner_hist.setPixmap(q)
+
+
+
+# #} end of set_hist
 
 # #{ default todo's
 
