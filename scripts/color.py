@@ -511,6 +511,7 @@ class ColorCapture():
         self.v_mean = 0
         self.v_sigma = 0
 
+        self.hist_hs = np.zeros([180,256])
         self.h_arr = []
         self.s_arr = []
         self.v_arr = []
