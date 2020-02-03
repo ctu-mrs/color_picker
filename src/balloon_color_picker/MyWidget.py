@@ -112,6 +112,9 @@ class MyWidget(QWidget):
         self.hist_orig_h =  180
         self.hist_orig_w =  256
         self.select_status = HIST_SELECTION
+        self.crop_stat = IMG
+        self.hist_mask = None
+        self.cur_hist = None
         # ROS services
 
 # #{ ros services
@@ -1099,11 +1102,9 @@ class MyWidget(QWidget):
         self.hist_orig_h = hist_resp.shape[0]
         self.hist_orig_w = hist_resp.shape[1]
         self.cur_hist = hist
-        minVal, maxVal, l, m = cv2.minMaxLoc(hist)
-        hist = (hist-minVal)/(maxVal-minVal)*255.0
+        self.hist_mask = np.zeros(self.cur_hist.shape)
 
-        histRGB = cv2.cvtColor(hist.astype('uint8'), cv2.COLOR_GRAY2RGB)
-        self.draw_hist(histRGB) 
+        self.redraw()
 
 # #} end of set_hist
 
@@ -1112,9 +1113,9 @@ class MyWidget(QWidget):
 
     def draw_hist(self, histRGB):
 
-        new_h = cv2.resize(histRGB, dsize=(600,500), interpolation=cv2.INTER_CUBIC)
+        new_h = cv2.resize(histRGB.astype('uint8'), dsize=(600,500), interpolation=cv2.INTER_CUBIC)
 
-        # rospy.loginfo('new_h shape {}'.format(new_h.shape))
+        rospy.loginfo('new_h shape {}'.format(new_h.shape))
 
         h,w,c = new_h.shape
         total = new_h.nbytes
@@ -1130,43 +1131,40 @@ class MyWidget(QWidget):
         self.inner_hist.setPixmap(q)
 
 
-
 # #} end of draw_hist
 
 # #{ select_hist
 
     def select_hist(self, x1,y1,x2,y2, h, w):
         rospy.loginfo('select status {}'.format(self.select_status))
-        if self.selected_count == 0:
-            hist = np.copy(self.cur_hist)
+        self.selected_count += 1
+        cv2.rectangle(self.hist_mask, (x1, y1), (x2, y2), (1), -1)  # A filled rectangle
+        self.redraw()
 
-            mask = self.get_mask(hist,x1,y1,x2,y2)
-            minVal, maxVal, l, m = cv2.minMaxLoc(hist)
-            hist = (hist-minVal)/(maxVal-minVal)*255.0
+    def redraw(self):
+        minVal, maxVal, l, m = cv2.minMaxLoc(self.cur_hist)
+        hist = (self.cur_hist-minVal)/(maxVal-minVal)*255.0
+        histRGB = cv2.cvtColor(hist.astype('uint8'), cv2.COLOR_GRAY2RGB)
 
-            histRGB = cv2.cvtColor(hist.astype('uint8'), cv2.COLOR_GRAY2RGB)
-            #transparency
-            overlay = histRGB.copy()
-            cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 200, 0), -1)  # A filled rectangle
-            alpha = 0.4
-            histRGB = cv2.addWeighted(overlay, alpha, histRGB, 1 - alpha, 0)
+        maskRGB = cv2.cvtColor(self.hist_mask.astype('uint8'), cv2.COLOR_GRAY2RGB)
+        maskRGB[self.hist_mask>0, :] = np.array([255,0,0])
 
-            # histRGB[mask==1] = [255,0,0, 50]
-            self.selected_hist = histRGB
-            self.selected_count += 1
-        else:
-            hist = np.copy(self.cur_hist)
-            # mask = self.get_mask(hist,x1,y1,x2,y2)
-            # self.selected_hist[mask==1] = [255,0,0, 50] 
-            overlay = self.selected_hist.copy()
-            cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 200, 0), -1)  # A filled rectangle
-            alpha = 0.4
-            alpha = 0.4
-            self.selected_hist = cv2.addWeighted(overlay,
-                                                 alpha,
-                                                 self.selected_hist,
-                                                 1 - alpha,
-                                                 0)
+        alpha = 0.3
+        self.selected_hist = alpha*maskRGB + (1.0-alpha)*histRGB
+
+        # cv2.imshow("to draw", self.selected_hist)
+        # cv2.waitKey(1)
+
+        rospy.loginfo('to draw shape {}'.format(self.selected_hist.shape))
+            
+
+            # overlay = self.selected_hist.copy()
+            # cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 200, 0), -1)  # A filled rectangle
+            # self.selected_hist = cv2.addWeighted(overlay,
+            #                                      alpha,
+            #                                      self.selected_hist,
+            #                                      1 - alpha,
+            #                                      0)
 
         self.draw_hist(self.selected_hist) 
 
@@ -1174,28 +1172,18 @@ class MyWidget(QWidget):
 
 # #} end of select_hist
 
+# #{ deselect_hist
+
     def deselect_hist(self, x1,y1,x2,y2):
         rospy.loginfo('deselect')
         if self.selected_count == 0:
             rospy.loginfo('nothing is selected, can"t deselect')
             return
-        mask = self.get_mask(self.cur_hist, x1,y1,x2,y2)
-        hist = self.cur_hist.copy()
-
-        minVal, maxVal, l, m = cv2.minMaxLoc(hist)
-        hist = (hist-minVal)/(maxVal-minVal)*255.0
-
-        histRGB = cv2.cvtColor(hist.astype('uint8'), cv2.COLOR_GRAY2RGB)
-
-        selected = self.selected_hist.copy()
-        alpha = 1
-        rospy.loginfo('selected shape {} cur shape {} '.format(self.selected_hist.shape, histRGB.shape))
-        selected[mask == 1] = histRGB[mask==1]
-        self.selected_hist = selected
-        self.draw_hist(self.selected_hist)
+        cv2.rectangle(self.hist_mask, (x1, y1), (x2, y2), (0), -1)  # A filled rectangle
+        self.redraw()
 
 
-
+# #} end of deselect_hist
 
 # #{ get_mask
 
@@ -1216,11 +1204,16 @@ class MyWidget(QWidget):
  
 
 
-    def keyPressEvent(self,event):
-        rospy.loginfo('huyyyyyy') 
-
-
 # #} end of get_mask
+
+# #{ keyPressEvent
+
+    def keyPressEvent(self,event):
+        # rospy.loginfo('huyyyyyy') 
+        pass
+
+
+# #} end of keyPressEvent
 
 # #{ default todo's
 
