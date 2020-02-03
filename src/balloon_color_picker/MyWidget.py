@@ -50,7 +50,8 @@ from PIL import Image
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi, QtCore
 from python_qt_binding.QtCore import (
-    QRect
+    QRect,
+    Qt
 )
 from python_qt_binding.QtWidgets import (
     QWidget,
@@ -67,6 +68,7 @@ from python_qt_binding.QtGui import (
     QImage,
     QKeySequence,
     QMouseEvent,
+    QKeyEvent,
     QCursor
 )
 from std_msgs.msg import String
@@ -77,12 +79,17 @@ from sensor_msgs.msg import Image as RosImg
 
 
 # #} end of imports
-
+# for setting the views HSV, LAB, RGB, or BOTH ( is kinda unused now)
 HSV = 0
 LUV = 1
 RGB = 2
 BOTH = 3
 OBD = 4
+# for cropping control
+HIST = 20
+IMG = 30
+HIST_SELECTION = 22
+HIST_DESELECTION = 25
 
 
 class MyWidget(QWidget):
@@ -102,6 +109,9 @@ class MyWidget(QWidget):
 
         self.orig_h = 920
         self.orig_w = 1080
+        self.hist_orig_h =  180
+        self.hist_orig_w =  256
+        self.select_status = HIST_SELECTION
         # ROS services
 
 # #{ ros services
@@ -329,8 +339,7 @@ class MyWidget(QWidget):
         cursor =QCursor()
         x = QMouseEvent.x()
         y = QMouseEvent.y()
-        rospy.loginfo('event button {}'.format(QMouseEvent.button))
-        if x < 1280 and y < 720:
+        if (x < 1280 and y < 720) and ( x > 15 and y > 15):
             if self._rubber == None:
                 if  not self.frozen:
                     self.freeze()
@@ -340,20 +349,41 @@ class MyWidget(QWidget):
                 self.rub_origin = QMouseEvent.pos()
                 self._rubber = QRubberBand(QRubberBand.Rectangle, self)
                 self._rubber.show()
+                self.crop_stat  = IMG
+        elif (x > 1300 and y > 520) and ( x < 1907 and  y < 1010  ):
+            self.rub_origin = QMouseEvent.pos()
+            self._rubber = QRubberBand(QRubberBand.Rectangle, self)
+            self._rubber.show()
+            if QMouseEvent.button() == Qt.RightButton and self.selected_count !=0:
+                self.select_status = HIST_DESELECTION
+            else:
+                self.select_status = HIST_SELECTION
+            self.crop_stat = HIST
+
+ 
     
     def mouseMoveEvent(self, QMouseEvent): 
-
         cursor =QCursor()
         x = QMouseEvent.x()
         y = QMouseEvent.y()
-        if x < 1280 and y < 720:
+        # if in coords of image and crop status is image then draw the rect
+        if self._rubber is None:
+            return
+        if (x < 1280 and y < 720) and ( x > 15 and y > 15) and self.crop_stat == IMG:
             self._rubber.setGeometry(QRect(self.rub_origin, QMouseEvent.pos()).normalized())
+        # if in coords of hist and crop status is hist then draw the rect
+        elif (x > 1300 and y > 520) and ( x < 1907 and  y < 1010  ) and self.crop_stat == HIST:
+            self._rubber.setGeometry(QRect(self.rub_origin, QMouseEvent.pos()).normalized())
+
 
     def mouseReleaseEvent(self, QMouseEvent):
         cursor =QCursor()
         x = QMouseEvent.x()
         y = QMouseEvent.y()
-        if x < 1280 and y < 720:
+        if self._rubber is None:
+            return
+        if (x < 1280 and y < 720) and ( x > 15 and y > 15) and self.crop_stat == IMG:
+
             if not self.frozen_before:
                 self.freeze()
 
@@ -384,8 +414,48 @@ class MyWidget(QWidget):
             w_ = rect_.width()
 
             y1,x1,y2,x2 = rect_.getCoords()
-            rospy.loginfo('cropped x1 {} y1 {} x2 {} y2{}'.format(x1,y1,x2,y2))
+            rospy.loginfo('Img cropped x1 {} y1 {} x2 {} y2{}'.format(x1,y1,x2,y2))
             self.capture_cropped(x1,y1,x2,y2)
+        elif (x > 1300 and y > 520) and ( x < 1907 and  y < 1010  ) and self.crop_stat == HIST:
+            a = self.mapToGlobal(self.rub_origin)
+            b = QMouseEvent.globalPos()
+            a = self.inner_hist.mapFromGlobal(a)
+            b = self.inner_hist.mapFromGlobal(b)
+
+            self._rubber.hide()
+            self._rubber = None
+
+            pix = QPixmap(self.inner_hist.pixmap())
+            sx = float(self.inner_hist.rect().width())
+            sy = float(self.inner_hist.rect().height())
+            
+            # h 1080 w 1920
+            sx = self.hist_orig_w / sx
+            sy = self.hist_orig_h / sy
+
+            a.setX(int(a.x()*sx))
+            a.setY(int(a.y()*sy))
+
+            b.setX(int(b.x()*sx))
+            b.setY(int(b.y()*sy))
+            rect_ = QRect(a,b)
+
+            h_ = rect_.height()
+            w_ = rect_.width()
+
+            # y1,x1,y2,x2 = rect_.getCoords()
+            x1,y1,x2,y2 = rect_.getCoords()
+            rospy.loginfo('Hist cropped x1 {} y1 {} x2 {} y2 {}'.format(x1,y1,x2,y2))
+            if self.select_status == HIST_SELECTION:
+                self.select_hist(x1,y1,x2,y2, h_,w_)
+            elif self.select_status == HIST_DESELECTION:
+                self.deselect_hist(x1,y1,x2,y2)
+        else:
+            if self._rubber is not None:
+                self._rubber.hide()
+                self._rubber = None
+                self.crop_stat = 0
+
 
 # #} end of mouse events
 
@@ -1023,20 +1093,36 @@ class MyWidget(QWidget):
     def set_hist(self, hist_resp):
         hist = np.array(hist_resp.hist)
         hist = np.reshape(hist, hist_resp.shape)
+        self.lut = np.zeros(hist_resp.shape)
+        self.selected_count = 0
 
+        self.hist_orig_h = hist_resp.shape[0]
+        self.hist_orig_w = hist_resp.shape[1]
+        self.cur_hist = hist
         minVal, maxVal, l, m = cv2.minMaxLoc(hist)
         hist = (hist-minVal)/(maxVal-minVal)*255.0
 
         histRGB = cv2.cvtColor(hist.astype('uint8'), cv2.COLOR_GRAY2RGB)
+        self.draw_hist(histRGB) 
+
+# #} end of set_hist
+
+# #{ draw_hist
+
+
+    def draw_hist(self, histRGB):
+
         new_h = cv2.resize(histRGB, dsize=(600,500), interpolation=cv2.INTER_CUBIC)
 
-        rospy.loginfo('new_h shape {}'.format(new_h.shape))
+        # rospy.loginfo('new_h shape {}'.format(new_h.shape))
 
         h,w,c = new_h.shape
         total = new_h.nbytes
         perLine = int(total/h)
-        q_img = QImage(new_h.data, w,h,perLine, QImage.Format_RGB888)
-
+        if c == 3:
+            q_img = QImage(new_h.data, w,h,perLine, QImage.Format_RGB888)
+        elif c ==4:
+            q_img = QImage(new_h.data, w,h,perLine, QImage.Format_RGBA8888)
 
         q = QPixmap.fromImage(q_img)
         self.inner_hist.setFixedWidth(600)
@@ -1045,7 +1131,96 @@ class MyWidget(QWidget):
 
 
 
-# #} end of set_hist
+# #} end of draw_hist
+
+# #{ select_hist
+
+    def select_hist(self, x1,y1,x2,y2, h, w):
+        rospy.loginfo('select status {}'.format(self.select_status))
+        if self.selected_count == 0:
+            hist = np.copy(self.cur_hist)
+
+            mask = self.get_mask(hist,x1,y1,x2,y2)
+            minVal, maxVal, l, m = cv2.minMaxLoc(hist)
+            hist = (hist-minVal)/(maxVal-minVal)*255.0
+
+            histRGB = cv2.cvtColor(hist.astype('uint8'), cv2.COLOR_GRAY2RGB)
+            #transparency
+            overlay = histRGB.copy()
+            cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 200, 0), -1)  # A filled rectangle
+            alpha = 0.4
+            histRGB = cv2.addWeighted(overlay, alpha, histRGB, 1 - alpha, 0)
+
+            # histRGB[mask==1] = [255,0,0, 50]
+            self.selected_hist = histRGB
+            self.selected_count += 1
+        else:
+            hist = np.copy(self.cur_hist)
+            # mask = self.get_mask(hist,x1,y1,x2,y2)
+            # self.selected_hist[mask==1] = [255,0,0, 50] 
+            overlay = self.selected_hist.copy()
+            cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 200, 0), -1)  # A filled rectangle
+            alpha = 0.4
+            alpha = 0.4
+            self.selected_hist = cv2.addWeighted(overlay,
+                                                 alpha,
+                                                 self.selected_hist,
+                                                 1 - alpha,
+                                                 0)
+
+        self.draw_hist(self.selected_hist) 
+
+
+
+# #} end of select_hist
+
+    def deselect_hist(self, x1,y1,x2,y2):
+        rospy.loginfo('deselect')
+        if self.selected_count == 0:
+            rospy.loginfo('nothing is selected, can"t deselect')
+            return
+        mask = self.get_mask(self.cur_hist, x1,y1,x2,y2)
+        hist = self.cur_hist.copy()
+
+        minVal, maxVal, l, m = cv2.minMaxLoc(hist)
+        hist = (hist-minVal)/(maxVal-minVal)*255.0
+
+        histRGB = cv2.cvtColor(hist.astype('uint8'), cv2.COLOR_GRAY2RGB)
+
+        selected = self.selected_hist.copy()
+        alpha = 1
+        rospy.loginfo('selected shape {} cur shape {} '.format(self.selected_hist.shape, histRGB.shape))
+        selected[mask == 1] = histRGB[mask==1]
+        self.selected_hist = selected
+        self.draw_hist(self.selected_hist)
+
+
+
+
+# #{ get_mask
+
+    def get_mask(self,arr, x1,y1,x2,y2):
+        mask = np.zeros([arr.shape[0], arr.shape[1]])
+        if x1>x2:
+            if y1>y2:
+                mask[x2:x1,y2:y1] = 1
+            elif y1<y2:
+                mask[x2:x1,y1:y2] = 1
+        elif x1<x2:
+            if y1>y2:
+                mask[x1:x2,y2:y1] = 1
+            elif y1<y2:
+                mask[x1:x2,y1:y2] = 1
+
+        return mask
+ 
+
+
+    def keyPressEvent(self,event):
+        rospy.loginfo('huyyyyyy') 
+
+
+# #} end of get_mask
 
 # #{ default todo's
 
@@ -1070,4 +1245,5 @@ class MyWidget(QWidget):
 
 
 # #} end of default todo's
+
 

@@ -199,8 +199,8 @@
   <widget class="QLabel" name="inner_hist">
     <property name="geometry">
       <rect>
-        <x>1290</x>
-        <y>500</y>
+        <x>1300</x>
+        <y>520</y>
         <width>1280</width>
         <height>720</height>
       </rect>
