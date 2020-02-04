@@ -344,6 +344,7 @@ class ColorCapture():
         t = time.time()
         res = self.np_hist(h,s,v, l, a, b)
 
+
         rospy.loginfo('time for np_hist {}'.format(time.time() - t))
         self.accumulate_hists(h,s,v,l,a,b)
         if self.img_count > 0:
@@ -390,6 +391,10 @@ class ColorCapture():
 
         rospy.loginfo('time for lab {}'.format(time.time() - t))
 
+        if math.isnan(h) or math.isnan(s) or math.isnan(v) or math.isnan(l) or math.isnan(a) or math.isnan(b):
+            res = CaptureCroppedResponse()
+            res.success = False
+            return res
         t = time.time()
         res = self.np_hist(h,s,v, l, a, b)
 

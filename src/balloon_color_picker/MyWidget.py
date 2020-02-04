@@ -864,6 +864,8 @@ class MyWidget(QWidget):
         res  =  self.capture_cropped_srv(x1,y1,x2,y2)
         hist =  self.capture_hist(x1,y1,x2,y2)
         self.set_hist(hist)
+        if res.success == False:
+            return
 
         # rospy.loginfo('response {}'.format(res))
 
