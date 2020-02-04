@@ -415,7 +415,7 @@ class ColorCapture():
             return res
         rospy.loginfo('h {} s {} v {}'.format(self.h_mean, self.s_mean, self.v_mean))
         rospy.loginfo('l {} a {} b {}'.format(self.l_mean, self.a_mean, self.b_mean))
-        return CaptureCroppedResponse(h,s,v,(self.h_mean, self.s_mean,self.v_mean, self.l_mean, self.a_mean, self.b_mean), (self.h_sigma,self.v_sigma,self.s_sigma, self.l_sigma, self.a_sigma,self.b_sigma), l, a, b, self.img_count)
+        return CaptureCroppedResponse(True,h,s,v,(self.h_mean, self.s_mean,self.v_mean, self.l_mean, self.a_mean, self.b_mean), (self.h_sigma,self.v_sigma,self.s_sigma, self.l_sigma, self.a_sigma,self.b_sigma), l, a, b, self.img_count)
 
 
 # #} end of capture_cropped_service_callback
