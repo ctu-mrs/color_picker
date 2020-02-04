@@ -909,7 +909,14 @@ class MyWidget(QWidget):
         color.data = self.color_space
         ball_rad = String()
         ball_rad.data = self.ball_radius.text()
-        rospy.loginfo('updating object detect {}'.format(self.update_service.call(color, ball_rad)))
+        hist = self.hist_mask.flatten().astype('uint8')
+        shape = self.hist_mask.shape
+        req = UpdateObd()
+        req.hist = hist
+        req.shape = shape
+        req.ball_rad = ball_rad
+        req.color_space = color
+        rospy.loginfo('updating object detect {}'.format(self.update_service.call(req)))
 
 
 
@@ -1113,8 +1120,11 @@ class MyWidget(QWidget):
 
     def draw_hist(self, histRGB):
 
-        new_h = cv2.resize(histRGB.astype('uint8'), dsize=(600,500), interpolation=cv2.INTER_CUBIC)
+        new_h = cv2.resize(histRGB.astype('uint8'), dsize=(512,360), interpolation=cv2.INTER_CUBIC)
+        # new_h = histRGB.copy().astype('uint8')
 
+        cv2.imshow("to draw", new_h)
+        cv2.waitKey(1)
         rospy.loginfo('new_h shape {}'.format(new_h.shape))
 
         h,w,c = new_h.shape
@@ -1126,8 +1136,8 @@ class MyWidget(QWidget):
             q_img = QImage(new_h.data, w,h,perLine, QImage.Format_RGBA8888)
 
         q = QPixmap.fromImage(q_img)
-        self.inner_hist.setFixedWidth(600)
-        self.inner_hist.setFixedHeight(500)
+        self.inner_hist.setFixedWidth(500)
+        self.inner_hist.setFixedHeight(600)
         self.inner_hist.setPixmap(q)
 
 
@@ -1144,6 +1154,7 @@ class MyWidget(QWidget):
     def redraw(self):
         minVal, maxVal, l, m = cv2.minMaxLoc(self.cur_hist)
         hist = (self.cur_hist-minVal)/(maxVal-minVal)*255.0
+        # hist = self.cur_hist.copy()
         histRGB = cv2.cvtColor(hist.astype('uint8'), cv2.COLOR_GRAY2RGB)
 
         maskRGB = cv2.cvtColor(self.hist_mask.astype('uint8'), cv2.COLOR_GRAY2RGB)
@@ -1152,8 +1163,6 @@ class MyWidget(QWidget):
         alpha = 0.3
         self.selected_hist = alpha*maskRGB + (1.0-alpha)*histRGB
 
-        # cv2.imshow("to draw", self.selected_hist)
-        # cv2.waitKey(1)
 
         rospy.loginfo('to draw shape {}'.format(self.selected_hist.shape))
             

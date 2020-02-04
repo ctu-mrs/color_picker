@@ -1,5 +1,7 @@
 std_msgs/String color_space
 std_msgs/String ball_rad
+int64[] hist
+int32[] shape
 ---
 bool success
 
