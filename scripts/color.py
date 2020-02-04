@@ -391,10 +391,6 @@ class ColorCapture():
 
         rospy.loginfo('time for lab {}'.format(time.time() - t))
 
-        if math.isnan(h) or math.isnan(s) or math.isnan(v) or math.isnan(l) or math.isnan(a) or math.isnan(b):
-            res = CaptureCroppedResponse()
-            res.success = False
-            return res
         t = time.time()
         res = self.np_hist(h,s,v, l, a, b)
 
@@ -413,6 +409,10 @@ class ColorCapture():
 
 
         self.img_count +=1
+        if math.isnan(self.h_mean) or math.isnan(s) or math.isnan(self.v_mean) or math.isnan(self.l_mean) or math.isnan(self.a_mean) or math.isnan(self.b_mean):
+            res = CaptureCroppedResponse()
+            res.success = False
+            return res
         rospy.loginfo('h {} s {} v {}'.format(self.h_mean, self.s_mean, self.v_mean))
         rospy.loginfo('l {} a {} b {}'.format(self.l_mean, self.a_mean, self.b_mean))
         return CaptureCroppedResponse(h,s,v,(self.h_mean, self.s_mean,self.v_mean, self.l_mean, self.a_mean, self.b_mean), (self.h_sigma,self.v_sigma,self.s_sigma, self.l_sigma, self.a_sigma,self.b_sigma), l, a, b, self.img_count)
