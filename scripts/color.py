@@ -397,6 +397,7 @@ class ColorCapture():
         rospy.loginfo('time for np_hist {}'.format(time.time() - t))
         self.accumulate_hists(h,s,v,l,a,b)
         if math.isnan(res[0][0]) or math.isnan(res[1][0]) or math.isnan(res[2][0]) or math.isnan(res[3][0]) or math.isnan(res[4][0]) or math.isnan(res[5][0]):
+            rospy.loginfo('detected NaNs in res, abort')
             res = CaptureCroppedResponse()
             res.success = False
             return res
@@ -414,7 +415,7 @@ class ColorCapture():
 
 
         self.img_count +=1
-                rospy.loginfo('h {} s {} v {}'.format(self.h_mean, self.s_mean, self.v_mean))
+        rospy.loginfo('h {} s {} v {}'.format(self.h_mean, self.s_mean, self.v_mean))
         rospy.loginfo('l {} a {} b {}'.format(self.l_mean, self.a_mean, self.b_mean))
         return CaptureCroppedResponse(True,h,s,v,(self.h_mean, self.s_mean,self.v_mean, self.l_mean, self.a_mean, self.b_mean), (self.h_sigma,self.v_sigma,self.s_sigma, self.l_sigma, self.a_sigma,self.b_sigma), l, a, b, self.img_count)
 
