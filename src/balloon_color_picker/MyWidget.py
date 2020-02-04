@@ -328,7 +328,7 @@ class MyWidget(QWidget):
         vbx_method = QVBoxLayout()
         but_lut = QRadioButton()
         but_lut.setText('LUT')
-        but_lut.setChecked(False)
+        but_lut.setChecked(True)
         but_lut.clicked.connect(self.set_method_lut)
         vbx_method.addWidget(but_lut)
 
@@ -437,6 +437,9 @@ class MyWidget(QWidget):
             rospy.loginfo('Img cropped x1 {} y1 {} x2 {} y2{}'.format(x1,y1,x2,y2))
             self.capture_cropped(x1,y1,x2,y2)
         elif (x > 1300 and y > 520) and ( x < 1907 and  y < 1010  ) and self.crop_stat == HIST:
+
+            if not self.frozen_before:
+                self.freeze()
             a = self.mapToGlobal(self.rub_origin)
             b = QMouseEvent.globalPos()
             a = self.inner_hist.mapFromGlobal(a)
@@ -944,7 +947,7 @@ class MyWidget(QWidget):
         method = String()
         method.data = self.load_method
 
-        rospy.loginfo('updating object detect {}'.format(self.update_service.call(color,ball_rad, hist, shape)))
+        rospy.loginfo('updating object detect {}'.format(self.update_service.call(color,ball_rad,method, hist, shape)))
 
 
 

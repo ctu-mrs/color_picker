@@ -555,7 +555,7 @@
    </property>
 
    <property name="placeholderText">
-    <string>Ball diameter</string>
+    <string>Ball diameter (in cm)</string>
    </property>
 
   </widget>
