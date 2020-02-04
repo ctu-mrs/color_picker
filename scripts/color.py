@@ -768,7 +768,7 @@ class ColorCapture():
         rospy.set_param(self.obd_segment, req.color_space.data)
         rospy.set_param(self.ball_size, float(req.ball_rad.data))
 
-        if req.load_method == LUT_METHOD:
+        if req.method == LUT_METHOD:
             rospy.set_param(self.lut_data, req.hist.aslist())
             rospy.set_param(self.lut_x, req.shape[1])
             rospy.set_param(self.lut_y, req.shape[0])
