@@ -1,5 +1,6 @@
 std_msgs/String color_space
 std_msgs/String ball_rad
+std_msgs/String method
 int64[] hist
 int32[] shape
 ---

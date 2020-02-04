@@ -325,6 +325,23 @@ class MyWidget(QWidget):
         vbx.addStretch(1)
 
         self.radio_buttons.setLayout(vbx)
+        vbx_method = QVBoxLayout()
+        but_lut = QRadioButton()
+        but_lut.setText('LUT')
+        but_lut.setChecked(False)
+        but_lut.clicked.connect(self.set_method_lut)
+        vbx_method.addWidget(but_lut)
+
+        but_thr = QRadioButton()
+        but_thr.setText('Threshold')
+        but_thr.setChecked(False)
+        but_thr.clicked.connect(self.set_method_thr)
+        vbx_method.addWidget(but_thr)
+        vbx.addStretch(1)
+        
+        self.radio_buttons_method.setLayout(vbx_method)
+
+        self.load_method = 'THR'
 
         # self.mousePressEvent.connect(self.mousePressEvent)
         self.plotted = False
@@ -470,6 +487,11 @@ class MyWidget(QWidget):
     def set_colorspace_lab(self):
         self.color_space = 'LAB'
 
+    def set_method_lut(self):
+        self.load_method = 'LUT'
+
+    def set_method_thr(self):
+        self.load_method = 'THR'
 
 
 # #} end of set_colorspaces
@@ -919,7 +941,10 @@ class MyWidget(QWidget):
         req.shape = shape
         req.ball_rad = ball_rad
         req.color_space = color
-        rospy.loginfo('updating object detect {}'.format(self.update_service.call(color, ball_rad, hist, shape)))
+        method = String()
+        method.data = self.load_method
+
+        rospy.loginfo('updating object detect {}'.format(self.update_service.call(color,ball_rad, hist, shape)))
 
 
 

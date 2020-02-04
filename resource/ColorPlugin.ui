@@ -580,9 +580,9 @@
   <widget class="QGroupBox" name="radio_buttons">
    <property name="geometry">
     <rect>
-     <x>1210</x>
+     <x>1170</x>
      <y>785</y>
-     <width>70</width>
+     <width>110</width>
      <height>100</height>
     </rect>
    </property>
@@ -592,6 +592,22 @@
    </property>
 
   </widget>
+  <widget class="QGroupBox" name="radio_buttons_method">
+   <property name="geometry">
+    <rect>
+     <x>1170</x>
+     <y>885</y>
+     <width>110</width>
+     <height>100</height>
+    </rect>
+   </property>
+
+   <property name="title">
+     <string>Load Method</string>
+   </property>
+
+  </widget>
+
 
 
  </widget>
