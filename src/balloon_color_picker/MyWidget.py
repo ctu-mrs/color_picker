@@ -944,7 +944,7 @@ class MyWidget(QWidget):
         req.hist = hist
         req.shape = shape
         req.ball_rad = ball_rad
-        if ball_radius.text() == "":
+        if self.ball_radius.text() == "":
             return
         req.color_space = color
         method = String()
