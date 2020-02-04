@@ -916,7 +916,7 @@ class MyWidget(QWidget):
         req.shape = shape
         req.ball_rad = ball_rad
         req.color_space = color
-        rospy.loginfo('updating object detect {}'.format(self.update_service.call(req)))
+        rospy.loginfo('updating object detect {}'.format(self.update_service.call(color, ball_rad, hist, shape)))
 
 
 
@@ -1123,8 +1123,8 @@ class MyWidget(QWidget):
         new_h = cv2.resize(histRGB.astype('uint8'), dsize=(512,360), interpolation=cv2.INTER_CUBIC)
         # new_h = histRGB.copy().astype('uint8')
 
-        cv2.imshow("to draw", new_h)
-        cv2.waitKey(1)
+        # cv2.imshow("to draw", new_h)
+        # cv2.waitKey(1)
         rospy.loginfo('new_h shape {}'.format(new_h.shape))
 
         h,w,c = new_h.shape
@@ -1136,8 +1136,8 @@ class MyWidget(QWidget):
             q_img = QImage(new_h.data, w,h,perLine, QImage.Format_RGBA8888)
 
         q = QPixmap.fromImage(q_img)
-        self.inner_hist.setFixedWidth(500)
-        self.inner_hist.setFixedHeight(600)
+        self.inner_hist.setFixedWidth(512)
+        self.inner_hist.setFixedHeight(360)
         self.inner_hist.setPixmap(q)
 
 
