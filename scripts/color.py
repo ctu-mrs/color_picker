@@ -78,6 +78,7 @@ BOTH = 3
 # Object detect load method
 LUT_METHOD ="LUT"
 THR_METHOD ="THR"
+LUT_HSV = "hs_lut"
 
 class ColorCapture():
 
@@ -765,21 +766,24 @@ class ColorCapture():
         rospy.set_param(self.obd_a_r, float(self.a_sigma*self.sigma_multi_a*2))
         rospy.set_param(self.obd_b_c, float(self.b_mean))
         rospy.set_param(self.obd_b_r, float(self.b_sigma*self.sigma_multi_b*2))
-        rospy.set_param(self.obd_segment, req.color_space.data)
         rospy.set_param(self.ball_size, float(req.ball_rad.data))
 
-        if req.method == LUT_METHOD:
-            rospy.set_param(self.lut_data, req.hist.aslist())
-            rospy.set_param(self.lut_x, req.shape[1])
-            rospy.set_param(self.lut_y, req.shape[0])
-
-
-
         rospy.loginfo('params set')
+        if req.method.data == LUT_METHOD:
+            rospy.set_param(self.lut_data, req.hist)
+            rospy.set_param(self.lut_x, 1)
+            rospy.set_param(self.lut_y, 1)
+            rospy.set_param(self.lut_z, 1)
+            rospy.set_param(self.obd_segment, LUT_HSV)
+            rospy.loginfo('binarization name  {} '.format(LUT_HSV ))
+        else:
+            rospy.set_param(self.obd_segment, req.color_space.data)
+            rospy.loginfo('binarization name  {} '.format(req.color_space.data))
+
+
         rospy.loginfo('h {} s {} v {}'.format(self.h_mean, self.s_mean, self.v_mean))
         rospy.loginfo('sigma h {} s {} v {}'.format(self.h_sigma, self.s_sigma, self.v_sigma))
         rospy.loginfo('l {} a {} b {}'.format(self.l_mean, self.a_mean, self.b_mean))
-        rospy.loginfo('binarization name  {} '.format(req.color_space.data))
         resp = UpdateObdResponse()
         if self.object_update.call().success:
             resp.success = True
