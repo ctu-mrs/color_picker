@@ -70,10 +70,14 @@ from std_msgs.msg import (
 
 # #} end of imports
 
+# view contstants definition
 HSV = 0
 LAB = 1
 RAW = 2
 BOTH = 3
+# Object detect load method
+LUT_METHOD ="LUT"
+THR_METHOD ="THR"
 
 class ColorCapture():
 
@@ -97,7 +101,7 @@ class ColorCapture():
         self.circled_lab_name = rospy.get_param('~circled_lab')
         self.object_detect_name = rospy.get_param('~object_detect')
 
-        ## | --------------------- set HSV params --------------------- |
+        ## | --------------------- get HSV params --------------------- |
 
         self.obd_h_c = rospy.get_param("~hue_center")
         self.obd_h_r = rospy.get_param("~hue_range")
@@ -116,6 +120,11 @@ class ColorCapture():
         self.obd_b_r = rospy.get_param("~b_range")
         self.obd_segment = rospy.get_param("~segment_name")
         self.ball_size = rospy.get_param("~ball_size")
+        ## | --------------------- get LUT params --------------------- |
+        self.lut_data = rospy.get_param("~lut_data")
+        self.lut_x = rospy.get_param("~lut_x")
+        self.lut_y = rospy.get_param("~lut_y")
+        self.lut_z = rospy.get_param("~lut_z")
 
 
 
@@ -758,6 +767,11 @@ class ColorCapture():
         rospy.set_param(self.obd_b_r, float(self.b_sigma*self.sigma_multi_b*2))
         rospy.set_param(self.obd_segment, req.color_space.data)
         rospy.set_param(self.ball_size, float(req.ball_rad.data))
+
+        if req.load_method == LUT_METHOD:
+            rospy.set_param(self.lut_data, req.hist.aslist())
+            rospy.set_param(self.lut_x, req.shape[1])
+            rospy.set_param(self.lut_y, req.shape[0])
 
 
 
