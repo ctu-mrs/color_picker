@@ -787,6 +787,7 @@ class MyWidget(QWidget):
         img = self.brd.imgmsg_to_cv2(data, 'rgb8')
         # cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+        img = cv2.resize(img, dsize=(1280,720), interpolation=cv2.INTER_CUBIC)
         h,w,c = img.shape
         q_img = QImage(img.data, w,h,3*w, QImage.Format_RGB888)
 
