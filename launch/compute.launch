@@ -23,7 +23,7 @@
       <param name='circled' value='/$(arg uav_name)/unrepub/circled'/>
       <param name='circled_hsv' value='/$(arg uav_name)/unrepub/circled_hsv'/>
       <param name='circled_lab' value='/$(arg uav_name)/unrepub/circled_lab'/>     
-      <param name="object_detect" value="/$(arg uav_name)/object_detect/repub" />
+      <param name="object_detect" value="/$(arg uav_name)/balloon_color_picker/obd" />
 
       <!-- HSV -->
       <param name="hue_center" value="$(arg object_detect_prefix)hsv/hue_center" />
