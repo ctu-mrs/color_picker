@@ -328,13 +328,13 @@ class MyWidget(QWidget):
         vbx_method = QVBoxLayout()
         but_lut = QRadioButton()
         but_lut.setText('LUT')
-        but_lut.setChecked(True)
+        but_lut.setChecked(False)
         but_lut.clicked.connect(self.set_method_lut)
         vbx_method.addWidget(but_lut)
 
         but_thr = QRadioButton()
         but_thr.setText('Threshold')
-        but_thr.setChecked(False)
+        but_thr.setChecked(True)
         but_thr.clicked.connect(self.set_method_thr)
         vbx_method.addWidget(but_thr)
         vbx.addStretch(1)
@@ -937,7 +937,7 @@ class MyWidget(QWidget):
         color.data = self.color_space
         ball_rad = String()
         ball_rad.data = self.ball_radius.text()
-        hist = self.hist_mask.flatten().astype('uint8')
+        hist = np.transpose(self.hist_mask).flatten().astype('uint8')
         shape = self.hist_mask.shape
         req = UpdateObd()
         req.hist = hist
