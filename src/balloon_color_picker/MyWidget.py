@@ -865,6 +865,7 @@ class MyWidget(QWidget):
         hist =  self.capture_hist(x1,y1,x2,y2)
         self.set_hist(hist)
         if res.success == False:
+            rospy.loginfo('capture cropped returned false, nans are possible')
             return
 
         # rospy.loginfo('response {}'.format(res))
