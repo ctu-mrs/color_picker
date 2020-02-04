@@ -944,11 +944,15 @@ class MyWidget(QWidget):
         req.hist = hist
         req.shape = shape
         req.ball_rad = ball_rad
+        if ball_radius.text() == "":
+            return
         req.color_space = color
         method = String()
         method.data = self.load_method
 
         rospy.loginfo('updating object detect {}'.format(self.update_service.call(color,ball_rad,method, hist, shape)))
+        if self.frozen:
+            self.freeze()
 
 
 
