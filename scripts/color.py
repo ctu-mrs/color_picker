@@ -658,6 +658,7 @@ class ColorCapture():
 
     def get_config(self, req):
 
+        # rospy.loginfo('req {}'.format(req))
         color_obj = {}
         conf_obj = {}
 
@@ -686,6 +687,8 @@ class ColorCapture():
         color_name = os.path.basename(req.name.data).lower().split('.')[0]
         conf_obj['segment_color_name'] = color_name
         color_obj['ball'] = conf_obj
+        color_obj['hist'] = req.hist
+        color_obj['hist_shape']  = req.shape
         if  os.path.isdir(req.name.data) is not True:
             f = file(req.name.data,'w')
             yaml.safe_dump(color_obj,f)

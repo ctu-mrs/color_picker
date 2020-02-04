@@ -1062,7 +1062,11 @@ class MyWidget(QWidget):
         ball_rad.data = self.ball_radius.text()
         color_name = String()
         color_name.data = self.color_name
-        resp  = self.get_config(color, save_dir, ball_rad, color_name)
+        hist = self.hist_mask.flatten().astype('uint8')
+        hist_shape = self.hist_mask.shape
+
+        resp  = self.get_config(color, save_dir, ball_rad, color_name, hist, hist_shape)
+
         #conf_obj = {}
         ##HSV
         #hsv = {}
