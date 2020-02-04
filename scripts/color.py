@@ -409,7 +409,7 @@ class ColorCapture():
 
 
         self.img_count +=1
-        if math.isnan(self.h_mean) or math.isnan(s) or math.isnan(self.v_mean) or math.isnan(self.l_mean) or math.isnan(self.a_mean) or math.isnan(self.b_mean):
+        if math.isnan(self.h_mean) or math.isnan(self.s_mean) or math.isnan(self.v_mean) or math.isnan(self.l_mean) or math.isnan(self.a_mean) or math.isnan(self.b_mean):
             res = CaptureCroppedResponse()
             res.success = False
             return res
