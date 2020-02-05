@@ -42,7 +42,13 @@
       <param name="b_range" value="$(arg object_detect_prefix)lab/b_range" />
 
       <param name="segment_name" value="$(arg object_detect_prefix)binarization_method_name" />
-      <param name="ball_size" value="/$(arg uav_name)/$(arg object_detect_prefix)physical_diameter" />
+      <param name="ball_size" value="$(arg object_detect_prefix)physical_diameter" />
+
+       <!-- LUT PARAMS -->
+      <param name="lut_data" value="$(arg object_detect_prefix)lut/data" />
+      <param name="lut_x" value="$(arg object_detect_prefix)lut/subsampling/x" />
+      <param name="lut_y" value="$(arg object_detect_prefix)lut/subsampling/y" />
+      <param name="lut_z" value="$(arg object_detect_prefix)lut/subsampling/z" />
     </node>
 
     <!-- <node name="unrepub_bag" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/bluefox3_front/image_raw  out:=/$(arg uav_name)/unerpub/color"/> -->
