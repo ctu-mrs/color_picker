@@ -661,6 +661,7 @@ class ColorCapture():
         # rospy.loginfo('req {}'.format(req))
         color_obj = {}
         conf_obj = {}
+        lut_obj = {}
 
         #HSV
         hsv = {}
@@ -680,15 +681,17 @@ class ColorCapture():
         lab['b_center'] = float(self.b_mean)
         lab['b_range'] = float(self.b_sigma*self.sigma_multi_b*2)
         conf_obj['lab'] = lab
+        
+        lut_obj['data'] = req.hist
+        lut_obj['subsampling']  = {'x':1, 'y':1, 'z':1}
+        conf_obj['lut'] = lut_obj
 
         conf_obj['binarization_method_name'] = req.color_space.data
-
         conf_obj['physical_diameter'] = float(req.rad.data)/100
+
+        color_obj['ball'] = conf_obj
         color_name = os.path.basename(req.name.data).lower().split('.')[0]
         conf_obj['segment_color_name'] = color_name
-        color_obj['ball'] = conf_obj
-        color_obj['hist'] = req.hist
-        color_obj['hist_shape']  = req.shape
         if  os.path.isdir(req.name.data) is not True:
             f = file(req.name.data,'w')
             yaml.safe_dump(color_obj,f)

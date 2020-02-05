@@ -3,6 +3,7 @@ from __future__ import division
 import os
 import subprocess
 import rospy
+import time
 import rospkg
 import cv2
 import rospy
@@ -150,11 +151,11 @@ class MyWidget(QWidget):
         self.filter_sub  = rospy.Subscriber(self.circle_filter_param, RosImg, self.filter_callback, queue_size = 1)
         self.filter_luv  = rospy.Subscriber(self.circle_luv_param, RosImg, self.luv_callback, queue_size = 1)
         self.obj_det_sb = rospy.Subscriber(self.object_detect_param, RosImg, self.obj_det_callback, queue_size=1)
-        self.hsv = message_filters.Subscriber(self.circle_filter_param, RosImg)
-        self.luv = message_filters.Subscriber(self.circle_luv_param, RosImg)
+        # self.hsv = message_filters.Subscriber(self.circle_filter_param, RosImg)
+        # self.luv = message_filters.Subscriber(self.circle_luv_param, RosImg)
 
-        self.ts = message_filters.ApproximateTimeSynchronizer([self.luv,  self.hsv], 1, 0.5)
-        self.ts.registerCallback(self.both_callback)
+        # self.ts = message_filters.ApproximateTimeSynchronizer([self.luv,  self.hsv], 1, 0.5)
+        # self.ts.registerCallback(self.both_callback)
 
 
 # #} end of ros subs
@@ -438,8 +439,8 @@ class MyWidget(QWidget):
             self.capture_cropped(x1,y1,x2,y2)
         elif (x > 1300 and y > 520) and ( x < 1907 and  y < 1010  ) and self.crop_stat == HIST:
 
-            if not self.frozen_before:
-                self.freeze()
+            # if not self.frozen_before:
+            #     self.freeze()
             a = self.mapToGlobal(self.rub_origin)
             b = QMouseEvent.globalPos()
             a = self.inner_hist.mapFromGlobal(a)
@@ -886,17 +887,25 @@ class MyWidget(QWidget):
 # #{ capture_cropped
 
     def capture_cropped(self, x1,y1,x2,y2):
+        t = time.time()
 
         res  =  self.capture_cropped_srv(x1,y1,x2,y2)
+        rospy.loginfo('time for capture cropped {}'.format(time.time() - t))
+        
+        t = time.time()
         hist =  self.capture_hist(x1,y1,x2,y2)
         self.set_hist(hist)
+        rospy.loginfo('time for hist cropped {}'.format(time.time() - t))
         if res.success == False:
             rospy.loginfo('capture cropped returned false, nans are possible')
             return
 
         # rospy.loginfo('response {}'.format(res))
 
+        t = time.time()
         self.plot(res.h, res.s,res.v,res.l,res.u,res.lv, res.means, res.sigmas)
+
+        rospy.loginfo('time for plot {}'.format(time.time() - t))
         self.image_count.setText('Samples: {} '.format(res.count))
 
 
