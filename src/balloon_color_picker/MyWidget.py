@@ -1169,6 +1169,7 @@ class MyWidget(QWidget):
 
     def draw_hist(self, histRGB):
 
+        # histRGB = np.log2(histRGB)
         new_h = cv2.resize(histRGB.astype('uint8'), dsize=(512,360), interpolation=cv2.INTER_CUBIC)
         # new_h = histRGB.copy().astype('uint8')
 
@@ -1203,6 +1204,7 @@ class MyWidget(QWidget):
     def redraw(self):
         minVal, maxVal, l, m = cv2.minMaxLoc(self.cur_hist)
         hist = (self.cur_hist-minVal)/(maxVal-minVal)*255.0
+        # hist = np.log2(hist)
         # hist = self.cur_hist.copy()
         histRGB = cv2.cvtColor(hist.astype('uint8'), cv2.COLOR_GRAY2RGB)
 
