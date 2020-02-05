@@ -115,7 +115,7 @@ class MyWidget(QWidget):
         self.select_status = HIST_SELECTION
         self.crop_stat = IMG
         self.hist_mask = np.zeros([self.hist_orig_h, self.hist_orig_w])
-        self.cur_hist = None
+        self.cur_hist_hs = None
         self.selected_count = 0
         # ROS services
 
@@ -1186,15 +1186,15 @@ class MyWidget(QWidget):
 # #{ set_hist
 
     def set_hist(self, hist_resp):
-        hist = np.array(hist_resp.hist)
-        hist = np.reshape(hist, hist_resp.shape)
+        hist = np.array(hist_resp.hist_hsv)
+        hist = np.reshape(hist, hist_resp_sv.shape)
         self.lut = np.zeros(hist_resp.shape)
         self.selected_count = 0
 
-        self.hist_orig_h = hist_resp.shape[0]
-        self.hist_orig_w = hist_resp.shape[1]
-        self.cur_hist = hist
-        # self.hist_mask = np.zeros(self.cur_hist.shape)
+        self.hist_orig_h = hist_resp.shape_hsv[0]
+        self.hist_orig_w = hist_resp.shape_hsv[1]
+        self.cur_hist_hs = hist
+        # self.hist_mask = np.zeros(self.cur_hist_hs.shape)
 
         self.redraw()
 
@@ -1238,10 +1238,10 @@ class MyWidget(QWidget):
         self.redraw()
 
     def redraw(self):
-        minVal, maxVal, l, m = cv2.minMaxLoc(self.cur_hist)
-        hist = (self.cur_hist-minVal)/(maxVal-minVal)*255.0
+        minVal, maxVal, l, m = cv2.minMaxLoc(self.cur_hist_hs)
+        hist = (self.cur_hist_hs-minVal)/(maxVal-minVal)*255.0
         # hist = np.log2(hist)
-        # hist = self.cur_hist.copy()
+        # hist = self.cur_hist_hs.copy()
         rospy.loginfo('hist shape {}'.format(hist.shape))
         hist = cv2.equalizeHist(hist.astype('uint8'))
         # hist = np.log2(hist)
