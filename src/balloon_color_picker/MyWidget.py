@@ -114,7 +114,7 @@ class MyWidget(QWidget):
         self.hist_orig_w =  256
         self.select_status = HIST_SELECTION
         self.crop_stat = IMG
-        self.hist_mask = np.zeros([180,256])
+        self.hist_mask = None
         self.cur_hist = None
         # ROS services
 
@@ -958,6 +958,7 @@ class MyWidget(QWidget):
         req.color_space = color
         method = String()
         method.data = self.load_method
+        rospy.loginfo('Sending data to Object Detect, bynarization type is :{}'.format(method))
 
         rospy.loginfo('updating object detect {}'.format(self.update_service.call(color,ball_rad,method, hist, shape)))
         if self.frozen:
@@ -1072,9 +1073,6 @@ class MyWidget(QWidget):
         color_name = String()
         color_name.data = self.color_name
         hist = self.hist_mask.flatten().astype('uint8')
-
-        cv2.imshow("to draw", self.hist_mask)
-        cv2.waitKey(1)
         hist_shape = self.hist_mask.shape
 
         resp  = self.get_config(color, save_dir, ball_rad, color_name, hist, hist_shape)
@@ -1161,7 +1159,7 @@ class MyWidget(QWidget):
         self.hist_orig_h = hist_resp.shape[0]
         self.hist_orig_w = hist_resp.shape[1]
         self.cur_hist = hist
-        # self.hist_mask = np.zeros(self.cur_hist.shape)
+        self.hist_mask = np.zeros(self.cur_hist.shape)
 
         self.redraw()
 
