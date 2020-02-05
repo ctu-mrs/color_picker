@@ -110,12 +110,17 @@ class MyWidget(QWidget):
 
         self.orig_h = 920
         self.orig_w = 1080
-        self.hist_orig_h =  180
-        self.hist_orig_w =  256
+        self.hist_hsv_orig_h =  180
+        self.hist_hsv_orig_w =  256
+        self.hist_lab_orig_h =  255
+        self.hist_lab_orig_w =  255
+        self.hist_status = HSV
         self.select_status = HIST_SELECTION
         self.crop_stat = IMG
-        self.hist_mask = np.zeros([self.hist_orig_h, self.hist_orig_w])
+        self.hist_mask = np.zeros([self.hist_hsv_orig_h, self.hist_hsv_orig_w])
+        self.hist_mask_lab = np.zeros([self.hist_lab_orig_h, self.hist_lab_orig_w])
         self.cur_hist_hs = None
+        self.cur_hist_ab = None
         self.selected_count = 0
         # ROS services
 
@@ -456,8 +461,8 @@ class MyWidget(QWidget):
             sy = float(self.inner_hist.rect().height())
             
             # h 1080 w 1920
-            sx = self.hist_orig_w / sx
-            sy = self.hist_orig_h / sy
+            sx = self.hist_hsv_orig_w / sx
+            sy = self.hist_hsv_orig_h / sy
 
             a.setX(int(a.x()*sx))
             a.setY(int(a.y()*sy))
@@ -473,9 +478,9 @@ class MyWidget(QWidget):
             x1,y1,x2,y2 = rect_.getCoords()
             rospy.loginfo('Hist cropped x1 {} y1 {} x2 {} y2 {}'.format(x1,y1,x2,y2))
             if self.select_status == HIST_SELECTION:
-                self.select_hist(x1,y1,x2,y2, h_,w_)
+                self.select_hist(x1,y1,x2,y2, h_,w_, self.hist_status)
             elif self.select_status == HIST_DESELECTION:
-                self.deselect_hist(x1,y1,x2,y2)
+                self.deselect_hist(x1,y1,x2,y2,self.hist_status)
         else:
             if self._rubber is not None:
                 self._rubber.hide()
@@ -491,6 +496,7 @@ class MyWidget(QWidget):
         self.color_space = 'HSV'
         self.inner.show()
         self.inner_hist.show()
+        self.hist_status = HSV
         self.inner_luv.hide()
         self.inner_luv_hist.hide()
         if self.view == HSV:
@@ -507,6 +513,7 @@ class MyWidget(QWidget):
         self.inner_luv_hist.show()
         self.inner.hide()
         self.inner_hist.hide()
+        self.hist_status = LAB
         if self.view == LUV:
             self.view = RGB
             self.set_view(self.view)
@@ -918,6 +925,7 @@ class MyWidget(QWidget):
         
         t = time.time()
         hist =  self.capture_hist(x1,y1,x2,y2)
+        
         self.set_hist(hist)
         rospy.loginfo('time for hist cropped {}'.format(time.time() - t))
         if res.success == False:
@@ -1187,16 +1195,24 @@ class MyWidget(QWidget):
 
     def set_hist(self, hist_resp):
         hist = np.array(hist_resp.hist_hsv)
-        hist = np.reshape(hist, hist_resp_sv.shape)
-        self.lut = np.zeros(hist_resp.shape)
+        hist = np.reshape(hist, hist_resp.shape_hsv)
         self.selected_count = 0
 
-        self.hist_orig_h = hist_resp.shape_hsv[0]
-        self.hist_orig_w = hist_resp.shape_hsv[1]
+        self.hist_hsv_orig_h = hist_resp.shape_hsv[0]
+        self.hist_hsv_orig_w = hist_resp.shape_hsv[1]
         self.cur_hist_hs = hist
         # self.hist_mask = np.zeros(self.cur_hist_hs.shape)
 
-        self.redraw()
+        hist = np.array(hist_resp.hist_lab)
+        hist = np.reshape(hist, hist_resp.shape_lab)
+
+
+        self.hist_lab_orig_h = hist_resp.shape_lab[0]
+        self.hist_lab_orig_w = hist_resp.shape_lab[1]
+        self.cur_hist_ab = hist
+
+
+        self.redraw(self.hist_status)
 
 # #} end of set_hist
 
@@ -1231,41 +1247,41 @@ class MyWidget(QWidget):
 
 # #{ select_hist
 
-    def select_hist(self, x1,y1,x2,y2, h, w):
+    def select_hist(self, x1,y1,x2,y2, h, w, color_space):
         rospy.loginfo('select status {}'.format(self.select_status))
         self.selected_count += 1
-        cv2.rectangle(self.hist_mask, (x1, y1), (x2, y2), (1), -1)  # A filled rectangle
-        self.redraw()
+        if color_space == HSV:
+            cv2.rectangle(self.hist_mask, (x1, y1), (x2, y2), (1), -1) 
+        elif color_space == LAB:
+            cv2.rectangle(self.hist_mask_lab, (x1, y1), (x2, y2), (1), -1)
+        self.redraw(color_space)
 
-    def redraw(self):
-        minVal, maxVal, l, m = cv2.minMaxLoc(self.cur_hist_hs)
-        hist = (self.cur_hist_hs-minVal)/(maxVal-minVal)*255.0
-        # hist = np.log2(hist)
-        # hist = self.cur_hist_hs.copy()
+    def redraw(self, color_space):
+        if color_space == HSV:
+            hist = self.cur_hist_hs.copy()
+        elif color_space == LAB:
+            hist = self.cur_hist_ab.copy()
+
+        #normalizing the histogram
+        minVal, maxVal, l, m = cv2.minMaxLoc(hist)
+        hist = (hist-minVal)/(maxVal-minVal)*255.0
+
         rospy.loginfo('hist shape {}'.format(hist.shape))
+
         hist = cv2.equalizeHist(hist.astype('uint8'))
-        # hist = np.log2(hist)
         histRGB = cv2.cvtColor(hist.astype('uint8'), cv2.COLOR_GRAY2RGB)
 
         maskRGB = cv2.cvtColor(self.hist_mask.astype('uint8'), cv2.COLOR_GRAY2RGB)
         maskRGB[self.hist_mask>0, :] = np.array([255,0,0])
 
         alpha = 0.3
-        self.selected_hist = alpha*maskRGB + (1.0-alpha)*histRGB
+        selected_hist = alpha*maskRGB + (1.0-alpha)*histRGB
 
 
-        rospy.loginfo('to draw shape {}'.format(self.selected_hist.shape))
+        rospy.loginfo('to draw shape {}'.format(selected_hist.shape))
             
 
-            # overlay = self.selected_hist.copy()
-            # cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 200, 0), -1)  # A filled rectangle
-            # self.selected_hist = cv2.addWeighted(overlay,
-            #                                      alpha,
-            #                                      self.selected_hist,
-            #                                      1 - alpha,
-            #                                      0)
-
-        self.draw_hist(self.selected_hist) 
+        self.draw_hist(selected_hist) 
 
 
 
@@ -1273,13 +1289,16 @@ class MyWidget(QWidget):
 
 # #{ deselect_hist
 
-    def deselect_hist(self, x1,y1,x2,y2):
+    def deselect_hist(self, x1,y1,x2,y2, color_space):
         rospy.loginfo('deselect')
         if self.selected_count == 0:
             rospy.loginfo('nothing is selected, can"t deselect')
             return
-        cv2.rectangle(self.hist_mask, (x1, y1), (x2, y2), (0), -1)  # A filled rectangle
-        self.redraw()
+        if color_space == HSV:
+            cv2.rectangle(self.hist_mask, (x1, y1), (x2, y2), (0), -1)  # A filled rectangle
+        elif color_space == LAB:
+            cv2.rectangle(self.hist_mask_lab, (x1, y1), (x2, y2), (0), -1)  # A filled rectangle
+        self.redraw(color_space)
 
 
 # #} end of deselect_hist
