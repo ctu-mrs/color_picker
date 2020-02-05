@@ -841,6 +841,7 @@ class ColorCapture():
         else:
             self.hist_hs += hist.astype('float')
 
+        rospy.loginfo('hist send')
         resp = CaptureHistResponse()
         resp.shape = hist.shape
         resp.hist = self.hist_hs.flatten().tolist()
