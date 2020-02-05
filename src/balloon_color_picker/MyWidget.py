@@ -114,8 +114,9 @@ class MyWidget(QWidget):
         self.hist_orig_w =  256
         self.select_status = HIST_SELECTION
         self.crop_stat = IMG
-        self.hist_mask = None
+        self.hist_mask = np.zeros([self.hist_orig_h, self.hist_orig_w])
         self.cur_hist = None
+        self.selected_count = 0
         # ROS services
 
 # #{ ros services
@@ -198,6 +199,7 @@ class MyWidget(QWidget):
         # self.toolbar_luv.setParent(self.inner_luv)
         self.canvas_luv.setParent(self.inner_luv)
         self.inner_luv.hide()
+        self.inner_luv_hist.hide()
 
         #SLIDER CONFIG
 
@@ -487,9 +489,31 @@ class MyWidget(QWidget):
 
     def set_colorspace_hsv(self):
         self.color_space = 'HSV'
+        self.inner.show()
+        self.inner_hist.show()
+        self.inner_luv.hide()
+        self.inner_luv_hist.hide()
+        if self.view == HSV:
+            self.view = RGB
+            self.set_view(self.view)
+            return
+        self.view = HSV
+        self.set_view(self.view)
 
     def set_colorspace_lab(self):
         self.color_space = 'LAB'
+        # but_lab.setChecked(True)
+        self.inner_luv.show()
+        self.inner_luv_hist.show()
+        self.inner.hide()
+        self.inner_hist.hide()
+        if self.view == LUV:
+            self.view = RGB
+            self.set_view(self.view)
+            return
+        rospy.loginfo('LAB from radio button')
+        self.view = LUV
+        self.set_view(self.view)
 
     def set_method_lut(self):
         self.load_method = 'LUT'
@@ -921,7 +945,13 @@ class MyWidget(QWidget):
             return
         print("HSV")
         self.view = HSV
+        # rospy.loginfo('HSV from radio button {}'.format(self.radio_buttons.buttonClicked()))
         self.set_view(self.view)
+        self.inner.show()
+        self.inner_hist.show()
+        self.inner_luv.hide()
+        self.inner_luv_hist.hide()
+
 
 
 # #} end of switch_view_hsv
@@ -936,6 +966,11 @@ class MyWidget(QWidget):
         print("LUV")
         self.view = LUV
         self.set_view(self.view)
+        self.inner_luv.show()
+        self.inner_luv_hist.show()
+        self.inner.hide()
+        self.inner_hist.hide()
+
 
 
 # #} end of switch_view_luv
@@ -1159,7 +1194,7 @@ class MyWidget(QWidget):
         self.hist_orig_h = hist_resp.shape[0]
         self.hist_orig_w = hist_resp.shape[1]
         self.cur_hist = hist
-        self.hist_mask = np.zeros(self.cur_hist.shape)
+        # self.hist_mask = np.zeros(self.cur_hist.shape)
 
         self.redraw()
 
@@ -1207,6 +1242,9 @@ class MyWidget(QWidget):
         hist = (self.cur_hist-minVal)/(maxVal-minVal)*255.0
         # hist = np.log2(hist)
         # hist = self.cur_hist.copy()
+        rospy.loginfo('hist shape {}'.format(hist.shape))
+        hist = cv2.equalizeHist(hist.astype('uint8'))
+        # hist = np.log2(hist)
         histRGB = cv2.cvtColor(hist.astype('uint8'), cv2.COLOR_GRAY2RGB)
 
         maskRGB = cv2.cvtColor(self.hist_mask.astype('uint8'), cv2.COLOR_GRAY2RGB)

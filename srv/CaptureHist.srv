@@ -2,6 +2,9 @@ int64 x1
 int64 y1
 int64 x2
 int64 y2
+
 ---
-float64[] hist
-int32[] shape
+float64[] hist_hsv
+int32[] shape_hsv
+float64[] hist_lab
+int32[] shape_lab
