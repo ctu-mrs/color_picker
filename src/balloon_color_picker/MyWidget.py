@@ -513,7 +513,7 @@ class MyWidget(QWidget):
         self.inner_luv_hist.show()
         self.inner.hide()
         self.inner_hist.hide()
-        self.hist_status = LAB
+        self.hist_status = LUV
         if self.view == LUV:
             self.view = RGB
             self.set_view(self.view)
