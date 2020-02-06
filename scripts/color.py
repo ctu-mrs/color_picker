@@ -182,6 +182,7 @@ class ColorCapture():
         self.hist_a[1] = np.arange(255)
         self.hist_b = np.zeros([2,255])
         self.hist_b[1] = np.arange(255)
+        self.hist_ab = None
         self.freeze = False
         self.color_space = 'HSV'
         self.sub = RAW
@@ -818,7 +819,13 @@ class ColorCapture():
 
     def create_hist(self,req):
         mask = self.get_mask(req.x1, req.y1, req.x2, req.y2)  
+
         hsv = cv2.cvtColor(self.cur_img, cv2.COLOR_BGR2HSV)
+        lab = cv2.cvtColor(self.cur_img, cv2.COLOR_BGR2LAB)
+
+        # #{ hist hsv
+        
+
         hbin = 180
         sbin = 256 
         histSize = [hbin, sbin]
@@ -829,7 +836,7 @@ class ColorCapture():
 
         channels = [0,1]
 
-        hist = cv2.calcHist(
+        histHS = cv2.calcHist(
             images=[hsv],
             channels=channels,
             mask = mask.astype('uint8'),
@@ -837,14 +844,42 @@ class ColorCapture():
             ranges = [0,180,0,256]
         )
         if self.hist_hs is None:
-            self.hist_hs = hist.astype('float')
+            self.hist_hs = histHS.astype('float')
         else:
-            self.hist_hs += hist.astype('float')
+            self.hist_hs += histHS.astype('float')
+
+        
+        # #} end of hist hsv
+
+         # #{ hist lab
+        
+        abin = 255
+        bbin = 255 
+        histSize = [abin, bbin]
+        channels = [1,2]
+
+        histAB = cv2.calcHist(
+            images=[lab],
+            channels=channels,
+            mask = mask.astype('uint8'),
+            histSize = histSize,
+            ranges = [0,255,0,255]
+        )
+        if self.hist_ab is None:
+            self.hist_ab = histAB.astype('float')
+        else:
+            self.hist_ab += histAB.astype('float')
+
+        
+        # #} end of hist lab
+
 
         rospy.loginfo('hist send')
         resp = CaptureHistResponse()
-        resp.shape = hist.shape
-        resp.hist = self.hist_hs.flatten().tolist()
+        resp.shape_lab = histAB.shape
+        resp.hist_lab = self.hist_ab.flatten().tolist()
+        resp.shape_hsv = histHS.shape
+        resp.hist_hsv = self.hist_hs.flatten().tolist()
 
         return resp
 

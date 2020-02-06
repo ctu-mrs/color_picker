@@ -211,8 +211,11 @@
   <widget class="QWidget" name="inner_luv">
     <property name="geometry">
       <rect>
+        <!-- <x>1290</x> -->
+        <!-- <y>500</y> -->
+
         <x>1290</x>
-        <y>500</y>
+        <y>10</y>
         <width>1280</width>
         <height>720</height>
       </rect>
@@ -240,6 +243,17 @@
       </widget>
     </hbox>
   </widget>
+  <widget class="QLabel" name="inner_luv_hist">
+    <property name="geometry">
+      <rect>
+        <x>1300</x>
+        <y>520</y>
+        <width>1280</width>
+        <height>720</height>
+      </rect>
+    </property>
+  </widget>
+
 
   <widget class="QSlider" name="sigma_slider">
     <property name="geometry">
