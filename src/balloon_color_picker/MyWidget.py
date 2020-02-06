@@ -1258,8 +1258,12 @@ class MyWidget(QWidget):
 
     def redraw(self, color_space):
         if color_space == HSV:
+            if self.cur_hist_hs is None:
+                return
             hist = self.cur_hist_hs.copy()
         elif color_space == LAB:
+            if self.cur_hist_ab is None:
+                return
             hist = self.cur_hist_ab.copy()
 
         #normalizing the histogram
