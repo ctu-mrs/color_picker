@@ -79,6 +79,7 @@ BOTH = 3
 LUT_METHOD ="LUT"
 THR_METHOD ="THR"
 LUT_HSV = "hs_lut"
+LUT_HSV = "ab_lut"
 
 class ColorCapture():
 
@@ -137,8 +138,8 @@ class ColorCapture():
         self.services_ready = False
         self.sigma_multi_h = 3
         self.sigma_multi_s = 3
-        self.sigma_multi_v = 3
-        self.sigma_multi_l = 3
+        self.sigma_multi_v = 40
+        self.sigma_multi_l = 40
         self.sigma_multi_a = 3
         self.sigma_multi_b = 3
         self.img_count = 0
@@ -148,8 +149,8 @@ class ColorCapture():
         self.h_sigma = 0
         self.s_mean = 0
         self.s_sigma = 0
-        self.v_mean = 0
-        self.v_sigma = 0
+        self.v_mean = 10
+        self.v_sigma = 10
 
         self.h_arr = []
         self.s_arr = []
@@ -164,8 +165,8 @@ class ColorCapture():
         self.hist_hs = None
 
         ## lab
-        self.l_mean = 0
-        self.l_sigma = 0
+        self.l_mean = 10
+        self.l_sigma = 10
         self.a_mean = 0
         self.a_sigma = 0
         self.b_mean = 0
@@ -781,11 +782,10 @@ class ColorCapture():
             rospy.set_param(self.lut_x, 1)
             rospy.set_param(self.lut_y, 1)
             rospy.set_param(self.lut_z, 1)
-            rospy.set_param(self.obd_segment, LUT_HSV)
-            rospy.loginfo('binarization name  {} '.format(LUT_HSV ))
-        else:
-            rospy.set_param(self.obd_segment, req.color_space.data)
-            rospy.loginfo('binarization name  {} '.format(req.color_space.data))
+            # rospy.set_param(self.obd_segment, LUT_HSV)
+
+        rospy.loginfo('binarization name  {} '.format(req.color_space.data))
+        rospy.set_param(self.obd_segment, req.color_space.data)
 
 
         rospy.loginfo('h {} s {} v {}'.format(self.h_mean, self.s_mean, self.v_mean))

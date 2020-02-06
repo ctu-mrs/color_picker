@@ -103,6 +103,7 @@ class MyWidget(QWidget):
         self.view = RGB
         ui_file = os.path.join(rospkg.RosPack().get_path('balloon_color_picker'), 'resource', 'ColorPlugin.ui')
         rospy.loginfo('uifile {}'.format(ui_file))
+        # self.log_info('uifile {}'.format(ui_file))
         loadUi(ui_file, self)
         # Give QObjects reasonable names
         self.setObjectName('ColorPluginUi')
@@ -145,7 +146,9 @@ class MyWidget(QWidget):
 # #} end of ros services        rospy.wait_for_service('capture')
 
         rospy.loginfo('waiting for service')
+        # self.log_info('waiting for service')
         rospy.loginfo('uav_name {}'.format(os.environ['UAV_NAME']))
+        # self.log_info('uav_name {}'.format(os.environ['UAV_NAME']))
         rospy.wait_for_service('get_params')
 
         self.config_path, self.save_path, self.circled_param, self.circle_filter_param, self.circle_luv_param, self.object_detect_param, self.save_to_drone = self.set_params()
@@ -228,14 +231,14 @@ class MyWidget(QWidget):
 
         self.sigma_slider_v.setRange(0,100)
         self.sigma_slider_v.setSingleStep(1)
-        self.sigma_slider_v.setValue(6)
+        self.sigma_slider_v.setValue(80)
 
 
         self.sigma_slider_v.valueChanged.connect(self.slider_event)
 
         self.sigma_slider_lab.setRange(0,100)
         self.sigma_slider_lab.setSingleStep(1)
-        self.sigma_slider_lab.setValue(6)
+        self.sigma_slider_lab.setValue(80)
 
 
         self.sigma_slider_lab.valueChanged.connect(self.slider_event_lab)
@@ -275,6 +278,9 @@ class MyWidget(QWidget):
         self.image_count.setFont(font)
         #BOX FOR BUTTONS font
         # self.color_buttons.setFont(font)
+        font.setPointSize(14)
+        self.sigma_value.setFont(font)
+        self.log_text.setFont(font)
 
         #LAB HSV TEXT
         font.setPointSize(23)
@@ -387,6 +393,7 @@ class MyWidget(QWidget):
             else:
                 self.select_status = HIST_SELECTION
             self.crop_stat = HIST
+            self.log_info("hist status {}".format("HSV" if self.hist_status == HSV else "LAB"))
 
  
     
@@ -443,26 +450,37 @@ class MyWidget(QWidget):
 
             y1,x1,y2,x2 = rect_.getCoords()
             rospy.loginfo('Img cropped x1 {} y1 {} x2 {} y2{}'.format(x1,y1,x2,y2))
+            self.log_info('Img cropped x1 {} y1 {} x2 {} y2{}'.format(x1,y1,x2,y2))
             self.capture_cropped(x1,y1,x2,y2)
         elif (x > 1300 and y > 520) and ( x < 1907 and  y < 1010  ) and self.crop_stat == HIST:
 
-            # if not self.frozen_before:
+            # h 1080 w 1920
+            if self.hist_status == HSV:
+                cur_hist = self.inner_hist
+            elif self.hist_status == LUV:
+                cur_hist = self.inner_luv_hist
+
+           # if not self.frozen_before:
             #     self.freeze()
             a = self.mapToGlobal(self.rub_origin)
             b = QMouseEvent.globalPos()
-            a = self.inner_hist.mapFromGlobal(a)
-            b = self.inner_hist.mapFromGlobal(b)
+            a = cur_hist.mapFromGlobal(a)
+            b = cur_hist.mapFromGlobal(b)
 
             self._rubber.hide()
             self._rubber = None
 
-            pix = QPixmap(self.inner_hist.pixmap())
-            sx = float(self.inner_hist.rect().width())
-            sy = float(self.inner_hist.rect().height())
+            pix = QPixmap(cur_hist.pixmap())
+            sx = float(cur_hist.rect().width())
+            sy = float(cur_hist.rect().height())
             
             # h 1080 w 1920
-            sx = self.hist_hsv_orig_w / sx
-            sy = self.hist_hsv_orig_h / sy
+            if self.hist_status == HSV:
+                sx = self.hist_hsv_orig_w / sx
+                sy = self.hist_hsv_orig_h / sy
+            elif self.hist_status == LUV:
+                sx = self.hist_lab_orig_w / sx
+                sy = self.hist_lab_orig_h / sy
 
             a.setX(int(a.x()*sx))
             a.setY(int(a.y()*sy))
@@ -477,6 +495,7 @@ class MyWidget(QWidget):
             # y1,x1,y2,x2 = rect_.getCoords()
             x1,y1,x2,y2 = rect_.getCoords()
             rospy.loginfo('Hist cropped x1 {} y1 {} x2 {} y2 {}'.format(x1,y1,x2,y2))
+            self.log_info('Hist cropped x1 {} y1 {} x2 {} y2 {}'.format(x1,y1,x2,y2))
             if self.select_status == HIST_SELECTION:
                 self.select_hist(x1,y1,x2,y2, h_,w_, self.hist_status)
             elif self.select_status == HIST_DESELECTION:
@@ -497,6 +516,7 @@ class MyWidget(QWidget):
         self.inner.show()
         self.inner_hist.show()
         self.hist_status = HSV
+        self.log_info("hist status {}".format("HSV"))
         self.inner_luv.hide()
         self.inner_luv_hist.hide()
         if self.view == HSV:
@@ -504,6 +524,7 @@ class MyWidget(QWidget):
             self.set_view(self.view)
             return
         self.view = HSV
+        self.log_info('HSV from radio button')
         self.set_view(self.view)
 
     def set_colorspace_lab(self):
@@ -514,19 +535,24 @@ class MyWidget(QWidget):
         self.inner.hide()
         self.inner_hist.hide()
         self.hist_status = LUV
+        self.log_info("hist status {}".format("LAB"))
         if self.view == LUV:
             self.view = RGB
             self.set_view(self.view)
             return
         rospy.loginfo('LAB from radio button')
+        self.log_info('LAB from radio button')
         self.view = LUV
         self.set_view(self.view)
 
     def set_method_lut(self):
         self.load_method = 'LUT'
+        self.log_info('Set method LUT')
+        
 
     def set_method_thr(self):
         self.load_method = 'THR'
+        self.log_info('Set method THR')
 
 
 # #} end of set_colorspaces
@@ -759,6 +785,7 @@ class MyWidget(QWidget):
         self.clear_count()
         self.image_count.setText('Samples: 0 ')
         print("cleared")
+        self.log_info("cleared")
 
 
 # #} end of clear
@@ -874,6 +901,7 @@ class MyWidget(QWidget):
 
         if len(self.figure.get_axes()) > 0:
             rospy.loginfo('axes {}'.format(self.figure.get_axes()))
+            self.log_info('axes {}'.format(self.figure.get_axes()))
             self.update_plots()
 
 
@@ -891,8 +919,10 @@ class MyWidget(QWidget):
         self.sigma_l = float(self.sigma_slider_lab.value())/2
         self.sigma_a = float(self.sigma_slider_a.value())/2
         self.sigma_b = float(self.sigma_slider_b.value())/2
-        self.update_plots_lab()
+        if len(self.figure_luv.get_axes()) > 0:
+            self.update_plots_lab()
         # rospy.loginfo('value {}'.format(self.sigma_l))
+        # self.log_info('value {}'.format(self.sigma_l))
         self.sigma_lab_caller(self.sigma_l, self.sigma_a, self.sigma_b)
         self.sigma_value_lab.setText('Sigma L value: {}'.format(self.sigma_l))
         self.sigma_value_a.setText('Sigma A value: {}'.format(self.sigma_a))
@@ -910,6 +940,7 @@ class MyWidget(QWidget):
         req = Capture()
         res= self.caller()
         # rospy.loginfo('response {}'.format(res))
+        # self.log_info('response {}'.format(res))
         self.plot(res.h, res.s,res.v,res.l,res.u,res.lv, res.means, res.sigmas)
         self.image_count.setText('Samples taken: {} '.format(res.count))
         return
@@ -954,6 +985,8 @@ class MyWidget(QWidget):
             self.set_view(self.view)
             return
         print("HSV")
+        self.log_info("HSV")
+        self.hist_status = HSV
         self.view = HSV
         # rospy.loginfo('HSV from radio button {}'.format(self.radio_buttons.buttonClicked()))
         self.set_view(self.view)
@@ -974,6 +1007,8 @@ class MyWidget(QWidget):
             self.set_view(self.view)
             return
         print("LUV")
+        self.hist_status = LUV
+        self.log_info("LUV")
         self.view = LUV
         self.set_view(self.view)
         self.inner_luv.show()
@@ -988,24 +1023,38 @@ class MyWidget(QWidget):
 # #{ update object detect colors
 
     def update_obd(self):
-        color = String()
-        color.data = self.color_space
+        rospy.loginfo('Sending data to Object Detect, bynarization type is :{}'.format(self.load_method))
+        self.log_info('Sending data to Object Detect, bynarization type is :{}'.format(self.load_method))
         ball_rad = String()
         ball_rad.data = self.ball_radius.text()
-        hist = np.transpose(self.hist_mask).flatten().astype('uint8')
-        shape = self.hist_mask.shape
-        req = UpdateObd()
-        req.hist = hist
-        req.shape = shape
-        req.ball_rad = ball_rad
+        if self.hist_status == HSV:
+            hist = np.transpose(self.hist_mask).flatten().astype('uint8')
+            shape = self.hist_mask.shape
+        elif self.hist_status == LUV:
+            hist = np.transpose(self.hist_mask_lab).flatten().astype('uint8')
+            shape = self.hist_mask_lab.shape
+
         if self.ball_radius.text() == "":
             return
-        req.color_space = color
         method = String()
         method.data = self.load_method
-        rospy.loginfo('Sending data to Object Detect, bynarization type is :{}'.format(method))
+
+        color = String()
+        if self.load_method == 'LUT':
+            rospy.loginfo('load method YES {}'.format(self.load_method))
+            rospy.loginfo('color space {}'.format(self.color_space))
+            if self.color_space == 'HSV':
+                color.data = 'hs_lut'
+            elif self.color_space == 'LAB':
+                rospy.loginfo('HUY {}'.format(self.color_space))
+                color.data = 'ab_lut'
+        else:
+            rospy.loginfo('load method KURWA {}'.format(self.load_method))
+            color.data = self.color_space
+        rospy.loginfo('color {}'.format(color))
 
         rospy.loginfo('updating object detect {}'.format(self.update_service.call(color,ball_rad,method, hist, shape)))
+        self.log_info('updating object detect {}'.format("OBD updated"))
         if self.frozen:
             self.freeze()
 
@@ -1021,6 +1070,7 @@ class MyWidget(QWidget):
             self.set_view(self.view)
             return
         print("BOTH")
+        self.log_info("BOTH")
         self.view = BOTH
         self.set_view(self.view)
 
@@ -1037,6 +1087,7 @@ class MyWidget(QWidget):
             self.view = RGB
             return
         print("OBD")
+        self.log_info("OBD")
         self.view = OBD
 
 # #} end of switch_view_both
@@ -1096,6 +1147,8 @@ class MyWidget(QWidget):
             self.frozen = False
         else:
             self.frozen = True
+        rospy.loginfo('Frozen {}'.format(self.frozen))
+        self.log_info('Frozen {}'.format(self.frozen))
         return
 
 
@@ -1247,6 +1300,35 @@ class MyWidget(QWidget):
 
 # #} end of draw_hist
 
+# #{ draw_hist_lab
+
+
+    def draw_hist_lab(self, histRGB):
+
+        # histRGB = np.log2(histRGB)
+        new_h = cv2.resize(histRGB.astype('uint8'), dsize=(400,400), interpolation=cv2.INTER_CUBIC)
+        # new_h = histRGB.copy().astype('uint8')
+
+        # cv2.imshow("to draw", new_h)
+        # cv2.waitKey(1)
+        rospy.loginfo('new_h shape {}'.format(new_h.shape))
+
+        h,w,c = new_h.shape
+        total = new_h.nbytes
+        perLine = int(total/h)
+        if c == 3:
+            q_img = QImage(new_h.data, w,h,perLine, QImage.Format_RGB888)
+        elif c ==4:
+            q_img = QImage(new_h.data, w,h,perLine, QImage.Format_RGBA8888)
+
+        q = QPixmap.fromImage(q_img)
+        self.inner_luv_hist.setFixedWidth(400)
+        self.inner_luv_hist.setFixedHeight(400)
+        self.inner_luv_hist.setPixmap(q)
+
+
+# #} end of draw_hist
+
 # #{ select_hist
 
     def select_hist(self, x1,y1,x2,y2, h, w, color_space):
@@ -1254,7 +1336,7 @@ class MyWidget(QWidget):
         self.selected_count += 1
         if color_space == HSV:
             cv2.rectangle(self.hist_mask, (x1, y1), (x2, y2), (1), -1) 
-        elif color_space == LAB:
+        elif color_space == LUV:
             cv2.rectangle(self.hist_mask_lab, (x1, y1), (x2, y2), (1), -1)
         self.redraw(color_space)
 
@@ -1263,7 +1345,7 @@ class MyWidget(QWidget):
             if self.cur_hist_hs is None:
                 return
             hist = self.cur_hist_hs.copy()
-        elif color_space == LAB:
+        elif color_space == LUV:
             if self.cur_hist_ab is None:
                 return
             hist = self.cur_hist_ab.copy()
@@ -1277,8 +1359,15 @@ class MyWidget(QWidget):
         hist = cv2.equalizeHist(hist.astype('uint8'))
         histRGB = cv2.cvtColor(hist.astype('uint8'), cv2.COLOR_GRAY2RGB)
 
-        maskRGB = cv2.cvtColor(self.hist_mask.astype('uint8'), cv2.COLOR_GRAY2RGB)
-        maskRGB[self.hist_mask>0, :] = np.array([255,0,0])
+
+        if color_space == HSV:
+            maskRGB = cv2.cvtColor(self.hist_mask.astype('uint8'), cv2.COLOR_GRAY2RGB)
+
+            maskRGB[self.hist_mask>0, :] = np.array([255,0,0])
+        elif color_space == LUV:
+            maskRGB = cv2.cvtColor(self.hist_mask_lab.astype('uint8'), cv2.COLOR_GRAY2RGB)
+            maskRGB[self.hist_mask_lab>0, :] = np.array([255,0,0])
+
 
         alpha = 0.3
         selected_hist = alpha*maskRGB + (1.0-alpha)*histRGB
@@ -1287,7 +1376,10 @@ class MyWidget(QWidget):
         rospy.loginfo('to draw shape {}'.format(selected_hist.shape))
             
 
-        self.draw_hist(selected_hist) 
+        if color_space == HSV:
+            self.draw_hist(selected_hist) 
+        elif color_space == LUV:
+            self.draw_hist_lab(selected_hist)
 
 
 
@@ -1297,12 +1389,14 @@ class MyWidget(QWidget):
 
     def deselect_hist(self, x1,y1,x2,y2, color_space):
         rospy.loginfo('deselect')
+        self.log_info('deselect')
         if self.selected_count == 0:
             rospy.loginfo('nothing is selected, can"t deselect')
+            self.log_info('nothing is selected, can"t deselect')
             return
         if color_space == HSV:
             cv2.rectangle(self.hist_mask, (x1, y1), (x2, y2), (0), -1)  # A filled rectangle
-        elif color_space == LAB:
+        elif color_space == LUV:
             cv2.rectangle(self.hist_mask_lab, (x1, y1), (x2, y2), (0), -1)  # A filled rectangle
         self.redraw(color_space)
 
@@ -1362,5 +1456,9 @@ class MyWidget(QWidget):
 
 
 # #} end of default todo's
+
+    def log_info(self, text):
+        self.log_text.setText("Last log message: {}".format(text))
+
 
 
