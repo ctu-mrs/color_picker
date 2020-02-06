@@ -872,7 +872,9 @@ class MyWidget(QWidget):
         self.sigma_v = float(self.sigma_slider_v.value())/2
         res = self.sigma_caller(self.sigma_h, self.sigma_s, self.sigma_v)
 
-        self.update_plots()
+        if len(self.figure.get_axes()) > 0:
+            rospy.loginfo('axes {}'.format(self.figure.get_axes()))
+            self.update_plots()
 
 
         self.sigma_value.setText('Sigma H value: {}'.format(self.sigma_h))
