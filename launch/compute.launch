@@ -22,7 +22,7 @@
       <param name='config_path' value='$(find balloon_color_picker)/config/balloon_config.yaml'/>
       <param name='circled' value='/$(arg uav_name)/unrepub/circled'/>
       <param name='circled_hsv' value='/$(arg uav_name)/unrepub/circled_hsv'/>
-      <param name='circled_lab' value='/$(arg uav_name)/unrepub/circled_lab'/>     
+      <param name='circled_lab' value='/$(arg uav_name)/unrepub/circled_lab'/>
       <param name="object_detect" value="/$(arg uav_name)/balloon_color_picker/obd" />
 
       <!-- HSV -->
@@ -43,6 +43,7 @@
 
       <param name="segment_name" value="$(arg object_detect_prefix)binarization_method_name" />
       <param name="ball_size" value="$(arg object_detect_prefix)physical_diameter" />
+
        <!-- LUT PARAMS -->
       <param name="lut_data" value="$(arg object_detect_prefix)lut/data" />
       <param name="lut_x" value="$(arg object_detect_prefix)lut/subsampling/x" />
@@ -55,7 +56,6 @@
     <node name="repub" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled theora out:=~circled_compressed"/>
     <node name="repub_hsv" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled_hsv theora out:=~circled_hsv_compressed"/>
     <node name="repub_lab" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled_lab theora out:=~circled_lab_compressed"/>
-
   </group>
 
 </launch>
