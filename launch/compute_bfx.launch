@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="uav_name" default="$(optenv UAV_NAME uav)"/>
-  <arg name="object_detect_prefix" default="object_detect/ball/"/>
+  <arg name="object_detect_prefix" default="object_detect_bfx/ball/"/>
 
   <group ns="$(arg uav_name)">
     <node name="balloon_color_picker" pkg="balloon_color_picker" type="color.py" output="screen">
@@ -14,7 +14,7 @@
       <remap from="circle_hsv" to="~circled_hsv" />
       <remap from="circle_lab" to="~circled_lab" />
       <!-- Services -->
-      <remap from="update_obd" to="/$(arg uav_name)/object_detect/regenerate_lut" />
+      <remap from="update_obd" to="/$(arg uav_name)/object_detect_bfx/regenerate_lut" />
       
       <!-- Params -->
       <param name='save_dir' value='$(find object_detect)/config/balls/'/>
@@ -23,7 +23,7 @@
       <param name='circled' value='/$(arg uav_name)/unrepub/circled'/>
       <param name='circled_hsv' value='/$(arg uav_name)/unrepub/circled_hsv'/>
       <param name='circled_lab' value='/$(arg uav_name)/unrepub/circled_lab'/>
-      <param name="object_detect" value="/$(arg uav_name)/object_detect/debug_image" />
+      <param name="object_detect" value="/$(arg uav_name)/balloon_color_picker/obd" />
 
       <!-- HSV -->
       <param name="hue_center" value="$(arg object_detect_prefix)hsv/hue_center" />
@@ -53,9 +53,9 @@
 
     <!-- <node name="unrepub_bag" pkg="image_transport" type="republish" args="compressed in:=/$(arg uav_name)/bluefox3_front/image_raw  out:=/$(arg uav_name)/unerpub/color"/> -->
 
-    <node name="repub" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled out:=~circled_compressed"/>
-    <node name="repub_hsv" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled_hsv out:=~circled_hsv_compressed"/>
-    <node name="repub_lab" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled_lab out:=~circled_lab_compressed"/>
+    <node name="repub" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled theora out:=~circled_compressed"/>
+    <node name="repub_hsv" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled_hsv theora out:=~circled_hsv_compressed"/>
+    <node name="repub_lab" pkg="image_transport" type="republish" args="raw in:=balloon_color_picker/circled_lab theora out:=~circled_lab_compressed"/>
   </group>
 
 </launch>
