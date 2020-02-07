@@ -455,6 +455,7 @@ class MyWidget(QWidget):
         elif (x > 1300 and y > 520) and ( x < 1907 and  y < 1010  ) and self.crop_stat == HIST:
 
             # h 1080 w 1920
+
             if self.hist_status == HSV:
                 cur_hist = self.inner_hist
             elif self.hist_status == LUV:
@@ -500,6 +501,7 @@ class MyWidget(QWidget):
                 self.select_hist(x1,y1,x2,y2, h_,w_, self.hist_status)
             elif self.select_status == HIST_DESELECTION:
                 self.deselect_hist(x1,y1,x2,y2,self.hist_status)
+
         else:
             if self._rubber is not None:
                 self._rubber.hide()
@@ -1169,9 +1171,20 @@ class MyWidget(QWidget):
             return
         ball_rad.data = self.ball_radius.text()
         color_name = String()
-        color_name.data = self.color_name
+        rospy.loginfo('Saving with load method {}'.format(self.load_method))
+        if self.load_method == 'LUT':
+            self.log_info('Saving lut type with color space : {}'.format(self.color_space))
+            if self.color_space == 'HSV':
+                rospy.loginfo('hs_lut')
+                color.data = 'hs_lut'
+            elif self.color_space == 'LAB':
+                rospy.loginfo('ab_lut')
+                color.data = 'ab_lut'
+        else:
+            color_name.data = self.color_name
         hist = self.hist_mask.flatten().astype('uint8')
         hist_shape = self.hist_mask.shape
+        rospy.loginfo('color space to SAVE {}'.format(color_name))
 
         resp  = self.get_config(color, save_dir, ball_rad, color_name, hist, hist_shape)
 
@@ -1267,7 +1280,8 @@ class MyWidget(QWidget):
         self.cur_hist_ab = hist
 
 
-        self.redraw(self.hist_status)
+        self.redraw(HSV)
+        self.redraw(LUV)
 
 # #} end of set_hist
 
@@ -1369,10 +1383,8 @@ class MyWidget(QWidget):
             maskRGB[self.hist_mask_lab>0, :] = np.array([255,0,0])
 
 
-        alpha = 0.3
+        alpha = 0.3        
         selected_hist = alpha*maskRGB + (1.0-alpha)*histRGB
-
-
         rospy.loginfo('to draw shape {}'.format(selected_hist.shape))
             
 
