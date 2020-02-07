@@ -660,7 +660,7 @@ class ColorCapture():
 
     def get_config(self, req):
 
-        # rospy.loginfo('req {}'.format(req))
+        rospy.loginfo('Request to save color space  {}'.format(req.color_space.data))
         color_obj = {}
         conf_obj = {}
         lut_obj = {}
@@ -691,8 +691,10 @@ class ColorCapture():
         subsample['z'] = 1
         lut_obj['subsampling']  =subsample 
         if req.color_space.data == 'hs_lut':
+            rospy.loginfo('LUT type  hs_lut saved ')
             conf_obj['lut'] = lut_obj
         elif req.color_space.data == 'ab_lut': 
+            rospy.loginfo('LUT type  ab_lut saved ')
             conf_obj['lut'] = lut_obj
         
 
