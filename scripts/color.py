@@ -685,8 +685,16 @@ class ColorCapture():
         conf_obj['lab'] = lab
         
         lut_obj['data'] = req.hist
-        lut_obj['subsampling']  = {'x':1, 'y':1, 'z':1}
-        conf_obj['lut'] = lut_obj
+        subsample = {}
+        subsample['x'] = 1
+        subsample['y'] = 1
+        subsample['z'] = 1
+        lut_obj['subsampling']  =subsample 
+        if req.color_space.data == 'hs_lut':
+            conf_obj['lut'] = lut_obj
+        elif req.color_space.data == 'ab_lut': 
+            conf_obj['lut'] = lut_obj
+        
 
         conf_obj['binarization_method_name'] = req.color_space.data
         conf_obj['physical_diameter'] = float(req.rad.data)/100
