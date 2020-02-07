@@ -1172,18 +1172,22 @@ class MyWidget(QWidget):
         ball_rad.data = self.ball_radius.text()
         color_name = String()
         rospy.loginfo('Saving with load method {}'.format(self.load_method))
+        hist = None
+        hist_shape = None
         if self.load_method == 'LUT':
             self.log_info('Saving lut type with color space : {}'.format(self.color_space))
             if self.color_space == 'HSV':
                 rospy.loginfo('hs_lut')
                 color.data = 'hs_lut'
+                hist_shape = self.hist_mask.shape
+                hist = np.transpose(self.hist_mask).flatten().astype('uint8')
             elif self.color_space == 'LAB':
                 rospy.loginfo('ab_lut')
                 color.data = 'ab_lut'
+                hist = np.transpose(self.hist_mask_lab).flatten().astype('uint8')
+                hist_shape = self.hist_mask_lab.shape
         else:
             color_name.data = self.color_name
-        hist = self.hist_mask.flatten().astype('uint8')
-        hist_shape = self.hist_mask.shape
         rospy.loginfo('color space to SAVE {}'.format(color_name))
 
         resp  = self.get_config(color, save_dir, ball_rad, color_name, hist, hist_shape)
