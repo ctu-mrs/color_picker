@@ -7,7 +7,7 @@
 
 
     <node name="unrepub" pkg="image_transport" type="republish" args="theora in:=/$(arg uav_name)/repub/circled_compressed raw out:=/$(arg uav_name)/unrepub/circled"/>
-    <node name="unrepub_obd" pkg="image_transport" type="republish" args="theora in:=/$(arg uav_name)/object_detect/debug_image raw out:=/$(arg uav_name)/balloon_color_picker/obd"/>
+    <node name="unrepub_obd" pkg="image_transport" type="republish" args="theora in:=/$(arg uav_name)/object_detect_bfx/debug_image raw out:=/$(arg uav_name)/balloon_color_picker/obd"/>
     <node name="unrepub_hsv" pkg="image_transport" type="republish" args="theora in:=/$(arg uav_name)/repub_hsv/circled_hsv_compressed raw out:=/$(arg uav_name)/unrepub/circled_hsv"/>
     <node name="unrepub_lab" pkg="image_transport" type="republish" args="theora in:=/$(arg uav_name)/repub_lab/circled_lab_compressed raw out:=/$(arg uav_name)/unrepub/circled_lab"/>
 
