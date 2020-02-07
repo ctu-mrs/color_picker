@@ -863,8 +863,8 @@ class ColorCapture():
 
          # #{ hist lab
         
-        abin = 255
-        bbin = 255 
+        abin = 256
+        bbin = 256
         histSize = [abin, bbin]
         channels = [1,2]
 
@@ -873,7 +873,7 @@ class ColorCapture():
             channels=channels,
             mask = mask.astype('uint8'),
             histSize = histSize,
-            ranges = [0,255,0,255]
+            ranges = [0,256,0,256]
         )
         if self.hist_ab is None:
             self.hist_ab = histAB.astype('float')
