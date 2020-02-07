@@ -531,6 +531,7 @@ class ColorCapture():
         self.v_sigma = 0
 
         self.hist_hs = None
+        self.hist_ab = None
         self.h_arr = []
         self.s_arr = []
         self.v_arr = []
