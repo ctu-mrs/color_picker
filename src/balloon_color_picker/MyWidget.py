@@ -113,8 +113,8 @@ class MyWidget(QWidget):
         self.orig_w = 1080
         self.hist_hsv_orig_h =  180
         self.hist_hsv_orig_w =  256
-        self.hist_lab_orig_h =  255
-        self.hist_lab_orig_w =  255
+        self.hist_lab_orig_h =  256
+        self.hist_lab_orig_w =  256
         self.hist_status = HSV
         self.select_status = HIST_SELECTION
         self.crop_stat = IMG
