@@ -531,6 +531,7 @@ class ColorCapture():
         self.v_sigma = 0
 
         self.hist_hs = None
+        self.hist_ab = None
         self.h_arr = []
         self.s_arr = []
         self.v_arr = []
@@ -887,6 +888,7 @@ class ColorCapture():
         # #} end of hist lab
 
 
+        rospy.loginfo('hist send')
         resp = CaptureHistResponse()
         resp.shape_lab = histAB.shape
         resp.hist_lab = self.hist_ab.flatten().tolist()
