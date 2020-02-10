@@ -75,7 +75,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Object Detect(4)</string>
+    <string>Object Detect(3)</string>
    </property>
   </widget>
   <widget class="QPushButton" name="change_both">
