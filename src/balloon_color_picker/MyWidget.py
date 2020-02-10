@@ -1025,8 +1025,8 @@ class MyWidget(QWidget):
 # #{ update object detect colors
 
     def update_obd(self):
-        rospy.loginfo('Sending data to Object Detect, bynarization type is :{}'.format(self.load_method))
-        self.log_info('Sending data to Object Detect, bynarization type is :{}'.format(self.load_method))
+        rospy.loginfo('Sending data to Object Detect:{}'.format(self.load_method))
+        self.log_info('Sending data to Object Detect:{}'.format(self.load_method))
         ball_rad = String()
         ball_rad.data = self.ball_radius.text()
         if self.hist_status == HSV:
@@ -1055,8 +1055,13 @@ class MyWidget(QWidget):
             color.data = self.color_space
         rospy.loginfo('color {}'.format(color))
 
-        rospy.loginfo('updating object detect {}'.format(self.update_service.call(color,ball_rad,method, hist, shape)))
-        self.log_info('updating object detect {}'.format("OBD updated"))
+        try:
+            rospy.loginfo('updating object detect {}'.format(self.update_service.call(color,ball_rad,method, hist, shape)))
+            self.log_info('updating object detect {}'.format("OBD updated"))
+        except:
+            rospy.loginfo("Couldn't update the object detect")
+            self.log_info("Couldn't update the object detect")
+
         if self.frozen:
             self.freeze()
 
