@@ -23,5 +23,5 @@ Feel free to use hotkeys for this, and submit bug report into issues, I'll try t
 
 
 <p align="center">
-  <img src="config/color_picker.png" />
+  <img src="config/color_picker_gui.png" />
 </p>
