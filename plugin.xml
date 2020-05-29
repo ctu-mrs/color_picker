@@ -14,7 +14,7 @@
       -->
       <label>Color Picker 9000</label>
       <icon type="theme">system-help</icon>
-      <statustip>Great user interface to provide real value.</statustip>
+      <statustip>A special designed GUI for accurate and fast color grabbing via ROS.</statustip>
     </qtgui>
   </class>
 </library>
