@@ -725,6 +725,7 @@ class ColorCapture():
 # #{ save_pic
 
     def save_pic(self,req):
+        #unused
         rospy.loginfo('cur_img {}'.format(self.cur_img))
         rospy.loginfo('ing {}'.format(cv2.imwrite('/home/mrs/last_img.png',self.cur_img)))
         msg = HistMsg()

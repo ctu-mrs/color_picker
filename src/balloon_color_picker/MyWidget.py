@@ -145,7 +145,7 @@ class MyWidget(QWidget):
 
 # #} end of ros services        rospy.wait_for_service('capture')
 
-        rospy.loginfo('waiting for service')
+        rospy.loginfo('waiting for service "get_params" from computation module \n if this is more than 5 secs check for topic remapping')
         # self.log_info('waiting for service')
         rospy.loginfo('uav_name {}'.format(os.environ['UAV_NAME']))
         # self.log_info('uav_name {}'.format(os.environ['UAV_NAME']))
@@ -964,7 +964,7 @@ class MyWidget(QWidget):
         self.set_hist(hist)
         rospy.loginfo('time for hist cropped {}'.format(time.time() - t))
         if res.success == False:
-            rospy.loginfo('capture cropped returned false, nans are possible')
+            rospy.loginfo('capture cropped returned false, NaNs are possible')
             return
 
         # rospy.loginfo('response {}'.format(res))
@@ -1107,6 +1107,7 @@ class MyWidget(QWidget):
         # f = file(path,'r')
         # print(path)
         # res = yaml.safe_load(f)
+        # TODO: change to reading from a file
         colors = ['Red','Green', 'Blue', 'Yellow']
         return colors
 
