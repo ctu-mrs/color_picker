@@ -1048,10 +1048,10 @@ class MyWidget(QWidget):
             if self.color_space == 'HSV':
                 color.data = 'hs_lut'
             elif self.color_space == 'LAB':
-                rospy.loginfo('HUY {}'.format(self.color_space))
+                rospy.loginfo('Color space {}'.format(self.color_space))
                 color.data = 'ab_lut'
         else:
-            rospy.loginfo('load method KURWA {}'.format(self.load_method))
+            rospy.loginfo('load method is {}'.format(self.load_method))
             color.data = self.color_space
         rospy.loginfo('color {}'.format(color))
 
@@ -1446,9 +1446,7 @@ class MyWidget(QWidget):
 # #} end of get_mask
 
 # #{ keyPressEvent
-
     def keyPressEvent(self,event):
-        # rospy.loginfo('huyyyyyy') 
         pass
 
 
