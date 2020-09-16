@@ -53,5 +53,5 @@ The GUI elements:
 ## Usage example   
 
 <p align="center">
-  <img src="config/color_picker.gif" />
+  <img src="config/output_2.gif" />
 </p>
