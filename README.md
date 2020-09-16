@@ -50,5 +50,8 @@ The GUI elements:
   - The histogram block - a group of three histograms charts for each channel - H, S, V for HSV view and L, A, B for LAB view. 
   - 2D histogram of H,S channels in case of HSV view and A,B channels for LAB view. This area is used to select the color ranges for the LUT. 
   - A log message - verbose output of the last action. 
-   
+## Usage example   
 
+<p align="center">
+  <img src="config/color_picker.gif" />
+</p>
