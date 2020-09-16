@@ -1,6 +1,10 @@
 # Color picker GUI 
 
 ## How to use
+Firstly make sure that you have installed the packages from the ``requirements.txt`` file, you can do it by this:
+```
+pip install -r requirements.txt
+```
 
 The basics setup is provided via launch/gui.launch file. You need to specify your image_in topic, the rest topics are for the gui, so you don't need to change them.
 You need to supply also a path were you want the saved files to be - save_dir param.
