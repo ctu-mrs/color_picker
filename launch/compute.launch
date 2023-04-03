@@ -7,7 +7,8 @@
     <node name="balloon_color_picker" pkg="balloon_color_picker" type="color.py" output="screen">
 
       <!-- Subscribed topics -->
-      <remap from="image_topic" to="/$(arg uav_name)/rs_d435/color/image_raw" />
+      <!-- <remap from="image_topic" to="/$(arg uav_name)/rs_d435/color/image_raw" /> -->
+      <remap from="image_topic" to="/$(arg uav_name)/front_rgbd/color/image_raw" />
 
       <!-- Published topics -->
       <remap from="circle_topic" to="~circled" />

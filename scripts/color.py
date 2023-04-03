@@ -15,7 +15,7 @@ import numpy as np
 from math import hypot
 import math
 import cv2
-import Tkinter
+import tkinter
 from tf2_geometry_msgs import PointStamped
 from sensor_msgs.msg import Image as RosImg
 from math import hypot
@@ -706,7 +706,7 @@ class ColorCapture():
         color_name = os.path.basename(req.name.data).lower().split('.')[0]
         conf_obj['segment_color_name'] = color_name
         if  os.path.isdir(req.name.data) is not True:
-            f = file(req.name.data,'w')
+            f = open(req.name.data,'w')
             yaml.safe_dump(color_obj,f)
             
             rospy.loginfo('saved to dir {}'.format(req.name.data))

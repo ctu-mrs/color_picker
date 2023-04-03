@@ -73,8 +73,8 @@ class ColorPlugin(Plugin):
                             help="Put plugin in silent mode")
         args, unknowns = parser.parse_known_args(context.argv())
         if not args.quiet:
-            print 'arguments: ', args
-            print 'unknowns: ', unknowns
+            print('arguments: ', args)
+            print('unknowns: ', unknowns)
 
         new_wdg = MyWidget.MyWidget()
         context.add_widget(new_wdg)
